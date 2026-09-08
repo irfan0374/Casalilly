@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ product.name }} - Casa Lilly</title>
+
+    <meta property="og:title" content="{{ product.name }}" />
+    <meta property="og:description" content="{{ product.description or '' }} — AED {{ '%.2f'|format(product.price) }}" />
+    <meta property="og:image" content="{{ product.image_url }}" />
+    <meta property="og:url" content="{{ site_base_url }}/product/{{ product.id }}" />
+    <meta property="og:type" content="product" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="{{ product.name }}" />
+    <meta name="twitter:description" content="{{ product.description or '' }} — AED {{ '%.2f'|format(product.price) }}" />
+    <meta name="twitter:image" content="{{ product.image_url }}" />
+</head>
+<body>
+    <img src="{{ product.image_url }}" alt="{{ product.name }}" style="max-width: 480px; width: 100%;" />
+    <h1>{{ product.name }}</h1>
+    <p>{{ product.description or '' }}</p>
+    <p>AED {{ '%.2f'|format(product.price) }}</p>
+</body>
+</html>
