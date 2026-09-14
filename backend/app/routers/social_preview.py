@@ -40,8 +40,7 @@ async def product_page(product_id: int, request: Request, db: Session = Depends(
             },
         )
 
-    # Non-crawler request: in local dev the frontend runs separately on :5180,
-    # so redirect there. In production the built SPA's dist/index.html would
-    # instead be served directly from this same origin (no redirect needed) —
-    # that integration is out of scope for local dev and not built here.
-    return RedirectResponse(url=f"http://localhost:5180/product/{product_id}")
+    # Non-crawler request: the frontend is a separately-deployed SPA
+    # (FRONTEND_URL — the Vite dev server locally, the Vercel domain in
+    # production), so send real visitors there.
+    return RedirectResponse(url=f"{settings.FRONTEND_URL}/product/{product_id}")

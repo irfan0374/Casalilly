@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import settings as app_settings
 from app.routers import (
     auth,
     hero_slides,
@@ -12,9 +13,14 @@ from app.routers import (
 
 app = FastAPI(title="Casa Lilly API")
 
+# Always allow local dev, plus whatever the deployed frontend's origin is
+# (FRONTEND_URL) — set that in production so the real Vercel domain isn't
+# blocked by CORS.
+_allowed_origins = {"http://localhost:5180", app_settings.FRONTEND_URL}
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5180"],
+    allow_origins=list(_allowed_origins),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
