@@ -15,12 +15,19 @@ app = FastAPI(title="Casa Lilly API")
 
 # Always allow local dev, plus whatever the deployed frontend's origin is
 # (FRONTEND_URL) — set that in production so the real Vercel domain isn't
-# blocked by CORS.
+# blocked by CORS. Vercel also spins up a throwaway preview URL
+# (https://<project>-<hash>-<team-slug>.vercel.app) for every deployment, so
+# we additionally match any preview URL under our own Vercel team via regex
+# — scoped to our team slug (not just *.vercel.app) so this doesn't grant
+# CORS to arbitrary other people's Vercel-hosted sites — otherwise CORS
+# would otherwise break again on every single deploy.
 _allowed_origins = {"http://localhost:5180", app_settings.FRONTEND_URL}
+_vercel_preview_regex = r"^https://.*-irfaans-projects\.vercel\.app$"
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=list(_allowed_origins),
+    allow_origin_regex=_vercel_preview_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
