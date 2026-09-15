@@ -78,23 +78,26 @@ const stats = [
 
       {/* Hero section */}
       {loading ? (
-        <div className="aspect-[4/3] w-full animate-pulse bg-rose-100 sm:aspect-[16/9] lg:aspect-[21/9]" />
+        <div className="mx-auto w-full max-w-7xl px-3 pt-4 sm:px-4 lg:px-1">
+          <div className="aspect-[3/2] w-full animate-pulse rounded-2xl bg-rose-100 sm:aspect-[2/1] sm:rounded-3xl lg:aspect-[3/1]" />
+        </div>
       ) : (
         heroVisible && <HeroSlideshow slides={heroSlides} />
       )}
 
       {/* Stats / value props — floats up over the bottom of the hero image
-          when a hero is shown, otherwise sits with normal top spacing. */}
+          when a hero is shown, otherwise sits with normal top spacing. Each
+          stat is its own card rather than one shared box. */}
       <section
         className={`relative z-10 mx-auto max-w-6xl px-4 ${
-          heroSpacing ? "-mt-16 sm:-mt-20" : "pt-8"
+          heroSpacing ? "-mt-8 sm:-mt-10" : "pt-8"
         }`}
       >
-        <div className="grid grid-cols-4 gap-1.5 rounded-2xl bg-white p-2.5 shadow-xl shadow-black/10 sm:gap-4 sm:p-6">
+        <div className="grid grid-cols-4 gap-2 sm:gap-4">
           {stats.map((s) => (
             <div
               key={s.label}
-              className="flex flex-col items-center gap-0.5 py-1 text-center sm:gap-1 sm:py-3"
+              className="flex flex-col items-center gap-0.5 rounded-2xl bg-white p-2 py-3 text-center shadow-xl shadow-black/10 sm:gap-1 sm:p-4 sm:py-5"
             >
               <s.icon
                 className="h-4 w-4 text-rose-500 sm:h-6 sm:w-6"

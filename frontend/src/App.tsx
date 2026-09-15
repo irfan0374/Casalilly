@@ -6,6 +6,7 @@ import Shop from "./routes/Shop";
 import About from "./routes/About";
 import Wishlist from "./routes/Wishlist";
 import ProductDetail from "./routes/ProductDetail";
+import NotFound from "./routes/NotFound";
 import AdminLogin from "./routes/admin/AdminLogin";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./routes/admin/AdminDashboard";
@@ -47,6 +48,8 @@ export default function App() {
                   element={<HeroSlideForm />}
                 />
               </Route>
+
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
         </WishlistProvider>

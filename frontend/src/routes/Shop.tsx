@@ -12,6 +12,7 @@ const SKELETON_COUNT = 8;
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedCategory = searchParams.get("category");
+  const searchQuery = searchParams.get("search");
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -30,7 +31,7 @@ export default function Shop() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    getProducts(selectedCategory ?? undefined)
+    getProducts(selectedCategory ?? undefined, undefined, searchQuery ?? undefined)
       .then((data) => {
         if (!cancelled) setProducts(data);
       })
@@ -47,7 +48,7 @@ export default function Shop() {
     return () => {
       cancelled = true;
     };
-  }, [selectedCategory]);
+  }, [selectedCategory, searchQuery]);
 
   function handleSelectCategory(category: string | null) {
     setSearchParams(category ? { category } : {});
@@ -66,6 +67,12 @@ export default function Shop() {
       </section>
 
       <main className="mx-auto max-w-6xl px-4 pb-16">
+        {searchQuery && (
+          <p className="mb-6 text-sm text-stone-500">
+            Showing results for <span className="font-semibold text-stone-700">“{searchQuery}”</span>
+          </p>
+        )}
+
         <div className="mb-8">
           {categoriesLoading ? (
             <div className="flex flex-wrap gap-2">
@@ -101,7 +108,9 @@ export default function Shop() {
 
         {!loading && !error && products.length === 0 && (
           <p className="py-16 text-center text-stone-400">
-            No products found in this category yet.
+            {searchQuery
+              ? `No products found for "${searchQuery}".`
+              : "No products found in this category yet."}
           </p>
         )}
 

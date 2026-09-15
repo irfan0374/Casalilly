@@ -1,4 +1,4 @@
-import { Gift } from "lucide-react";
+import logo from "../assets/logo-180.png";
 
 /** Placeholder matching ProductCard's exact layout, shown while the product
  * list itself is still loading (not just an individual image — see
@@ -8,7 +8,7 @@ export default function ProductCardSkeleton() {
   return (
     <div className="flex flex-col overflow-hidden rounded-xl border border-rose-100 bg-white shadow-sm sm:rounded-2xl">
       <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden bg-rose-50">
-        <Gift className="h-10 w-10 text-rose-200" strokeWidth={1.5} aria-hidden="true" />
+        <img src={logo} alt="" className="h-10 w-10 rounded-full object-cover opacity-40" />
       </div>
       <div className="flex flex-1 flex-col gap-2 p-2.5 sm:gap-2.5 sm:p-4">
         <div className="hidden h-5 w-20 animate-pulse rounded-full bg-rose-100 sm:block" />

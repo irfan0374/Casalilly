@@ -21,6 +21,7 @@ def list_categories() -> List[str]:
 def list_products(
     category: Optional[str] = None,
     featured: Optional[bool] = None,
+    search: Optional[str] = None,
     db: Session = Depends(get_db),
 ) -> List[Product]:
     query = db.query(Product).filter(Product.is_active.is_(True))
@@ -28,6 +29,11 @@ def list_products(
         query = query.filter(Product.category == category)
     if featured is not None:
         query = query.filter(Product.is_featured.is_(featured))
+    if search:
+        pattern = f"%{search.strip()}%"
+        query = query.filter(
+            (Product.name.ilike(pattern)) | (Product.description.ilike(pattern))
+        )
     return query.order_by(Product.created_at.desc()).all()
 
 
