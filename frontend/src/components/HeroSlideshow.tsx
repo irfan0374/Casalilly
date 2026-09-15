@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import type { HeroSlide } from "../types";
 
 const AUTO_ROTATE_MS = 6000;
@@ -46,20 +45,7 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
             {active.subheading ||
               "Handpicked bouquets, plants & gift baskets for every occasion — browse the collection and order in a tap over WhatsApp."}
           </p>
-          <div className="mt-2 flex flex-wrap items-center gap-4">
-            <Link
-              to="/shop"
-              className="rounded-full bg-rose-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700"
-            >
-              Shop Now
-            </Link>
-            <Link
-              to="/shop"
-              className="text-sm font-semibold text-white/90 hover:text-white"
-            >
-              Browse Categories →
-            </Link>
-          </div>
+        
         </div>
 
         {slides.length > 1 && (

@@ -5,6 +5,8 @@ import { getCategories, getProducts } from "../api/products";
 import { getHeroSlides } from "../api/heroSlides";
 import BestSellerCarousel from "../components/BestSellerCarousel";
 import HeroSlideshow from "../components/HeroSlideshow";
+import OurProductsSection from "../components/OurProductsSection";
+import ProductCardSkeleton from "../components/ProductCardSkeleton";
 import PublicLayout from "../components/PublicLayout";
 import { categoryIcon, categoryImage, formatCategory } from "../lib/categories";
 import storyImage from "../assets/image1.jpeg";
@@ -66,19 +68,26 @@ const stats = [
     ];
 
   const heroVisible = heroSlides.length > 0;
+  // Treat the loading state as if a hero will show, so the stats card
+  // doesn't jump position once the real hero (or its absence) is known.
+  const heroSpacing = loading || heroVisible;
 
   return (
     <PublicLayout>
 
-      
+
       {/* Hero section */}
-      {heroVisible && <HeroSlideshow slides={heroSlides} />}
+      {loading ? (
+        <div className="aspect-[4/3] w-full animate-pulse bg-rose-100 sm:aspect-[16/9] lg:aspect-[21/9]" />
+      ) : (
+        heroVisible && <HeroSlideshow slides={heroSlides} />
+      )}
 
       {/* Stats / value props — floats up over the bottom of the hero image
           when a hero is shown, otherwise sits with normal top spacing. */}
       <section
         className={`relative z-10 mx-auto max-w-6xl px-4 ${
-          heroVisible ? "-mt-16 sm:-mt-20" : "pt-8"
+          heroSpacing ? "-mt-16 sm:-mt-20" : "pt-8"
         }`}
       >
         <div className="grid grid-cols-4 gap-1.5 rounded-2xl bg-white p-2.5 shadow-xl shadow-black/10 sm:gap-4 sm:p-6">
@@ -92,9 +101,13 @@ const stats = [
                 strokeWidth={2}
                 aria-hidden="true"
               />
-              <span className="text-sm font-bold text-stone-800 sm:text-xl">
-                {s.value}
-              </span>
+              {loading ? (
+                <span className="h-3.5 w-10 animate-pulse rounded bg-rose-100 sm:h-5 sm:w-14" />
+              ) : (
+                <span className="text-sm font-bold text-stone-800 sm:text-xl">
+                  {s.value}
+                </span>
+              )}
               <span className="text-[9px] font-medium leading-tight text-stone-500 sm:text-xs">
                 {s.label}
               </span>
@@ -106,7 +119,23 @@ const stats = [
 
 
       {/* Categories */}
-      {categories.length > 0 && (
+      {loading && (
+        <section className="mx-auto max-w-6xl px-4 py-16 text-center">
+          <h2 className="font-serif text-2xl font-bold text-stone-800 sm:text-3xl">
+            Our Categories
+          </h2>
+          <div className="scrollbar-none mt-8 grid auto-cols-max grid-flow-col grid-rows-2 justify-start gap-x-5 gap-y-6 overflow-x-auto px-1 pb-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-8 sm:overflow-visible sm:px-0 sm:pb-0">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex w-20 flex-col items-center gap-2 sm:w-24">
+                <span className="h-20 w-20 animate-pulse rounded-full bg-rose-100" />
+                <span className="h-3 w-12 animate-pulse rounded bg-rose-100" />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!loading && categories.length > 0 && (
         <section className="mx-auto max-w-6xl px-4 py-16 text-center">
           <h2 className="font-serif text-2xl font-bold text-stone-800 sm:text-3xl">
             Our Categories
@@ -146,7 +175,7 @@ const stats = [
 
       {/* Our story banner */}
  <section className="w-full sm:py-2 px-4 sm:px-6 lg:px-2 max-w-7xl mx-auto">
-  <div className="relative flex h-36 w-full items-stretch overflow-hidden bg-[#f4e1cd] sm:h-48 lg:h-72 xl:h-80 rounded-2xl">
+  <div className="relative flex h-36 w-full items-stretch overflow-hidden bg-rose-50 sm:h-48 lg:h-72 xl:h-80 rounded-2xl">
     <div className="relative z-10 flex w-[44%] flex-col justify-center gap-1 px-3 py-2 sm:w-auto sm:max-w-sm sm:gap-3 sm:px-8 sm:py-6 lg:max-w-md lg:px-10">
       <h2 className="font-serif text-xs font-bold uppercase leading-tight tracking-tight text-gray-600 sm:text-2xl sm:leading-snug lg:text-2xl">
         Flowers That Tell Beautiful Stories
@@ -171,7 +200,7 @@ const stats = [
         className="h-full w-full object-cover object-[center_35%] sm:object-[center_55%]"
       />
       <div
-        className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[#f4e1cd] to-transparent sm:w-24 lg:w-32"
+        className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-rose-50 to-transparent sm:w-24 lg:w-32"
         aria-hidden="true"
       />
     </div>
@@ -181,7 +210,7 @@ const stats = [
     
 
       {/* Best sellers preview */}
-      <section className="mx-auto max-w-6xl py-16">
+      <section className="mx-auto max-w-6xl pt-16 pb-6">
         <div className="mb-8 flex items-center justify-between px-4">
           <h2 className="font-serif text-2xl font-bold text-stone-800 sm:text-3xl">
             Best Sellers
@@ -195,7 +224,11 @@ const stats = [
         </div>
 
         {loading && (
-          <p className="py-12 text-center text-stone-400">Loading…</p>
+          <div className="grid grid-cols-2 gap-3 px-4 sm:gap-6 md:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </div>
         )}
 
         {!loading && featured.length === 0 && (
@@ -209,12 +242,12 @@ const stats = [
         )}
       </section>
 
-
-
+      {/* Our Products — tabbed by category, 6 items */}
+      <OurProductsSection categories={categories} />
 
         {/* Personalized touch banner  */}
       <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 sm:py-2 lg:px-2">
-        <div className="relative flex h-36 w-full items-stretch overflow-hidden rounded-2xl bg-[#e3e9da] sm:h-48 lg:h-72 xl:h-80">
+        <div className="relative flex h-36 w-full items-stretch overflow-hidden rounded-2xl bg-white ring-1 ring-rose-100 sm:h-48 lg:h-72 xl:h-80">
           
            <div className="relative w-[56%] flex-1">
             <img
@@ -223,7 +256,7 @@ const stats = [
               className="h-full w-full object-cover object-[center_30%] sm:object-[center_40%]"
             />
             <div
-              className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#e3e9da] to-transparent sm:w-24 lg:w-32"
+              className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent sm:w-24 lg:w-32"
               aria-hidden="true"
             />
           </div>

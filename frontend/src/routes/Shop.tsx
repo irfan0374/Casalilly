@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getCategories, getProducts } from "../api/products";
 import ProductCard from "../components/ProductCard";
+import ProductCardSkeleton from "../components/ProductCardSkeleton";
 import CategoryFilter from "../components/CategoryFilter";
 import PublicLayout from "../components/PublicLayout";
 import type { Product } from "../types";
+
+const SKELETON_COUNT = 8;
 
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -12,13 +15,15 @@ export default function Shop() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getCategories()
       .then(setCategories)
-      .catch(() => setCategories([]));
+      .catch(() => setCategories([]))
+      .finally(() => setCategoriesLoading(false));
   }, []);
 
   useEffect(() => {
@@ -62,17 +67,32 @@ export default function Shop() {
 
       <main className="mx-auto max-w-6xl px-4 pb-16">
         <div className="mb-8">
-          <CategoryFilter
-            categories={categories}
-            selected={selectedCategory}
-            onSelect={handleSelectCategory}
-          />
+          {categoriesLoading ? (
+            <div className="flex flex-wrap gap-2">
+              {["w-14", "w-24", "w-20", "w-28", "w-20", "w-16"].map(
+                (w, i) => (
+                  <div
+                    key={i}
+                    className={`h-8 ${w} animate-pulse rounded-full bg-rose-100`}
+                  />
+                )
+              )}
+            </div>
+          ) : (
+            <CategoryFilter
+              categories={categories}
+              selected={selectedCategory}
+              onSelect={handleSelectCategory}
+            />
+          )}
         </div>
 
         {loading && (
-          <p className="py-16 text-center text-stone-400">
-            Loading products…
-          </p>
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </div>
         )}
 
         {!loading && error && (

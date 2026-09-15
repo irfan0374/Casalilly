@@ -5,7 +5,7 @@ import ProductImage from "../components/ProductImage";
 import WhatsAppButton from "../components/WhatsAppButton";
 import WishlistButton from "../components/WishlistButton";
 import PublicLayout from "../components/PublicLayout";
-import ProductCard from "../components/ProductCard";
+import OurProductCard from "../components/OurProductCard";
 import type { Product } from "../types";
 import { formatCategory } from "../lib/categories";
 import { productGallery } from "../lib/gallery";
@@ -27,7 +27,6 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [related, setRelated] = useState<Product[]>([]);
 
@@ -70,30 +69,6 @@ export default function ProductDetail() {
       cancelled = true;
     };
   }, [id]);
-
-  async function handleShare() {
-    if (!product) return;
-    const shareUrl = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: product.name,
-          text: `Check out ${product.name} at Casa Lilly`,
-          url: shareUrl,
-        });
-      } catch {
-        // User cancelled the share sheet — nothing to do.
-      }
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard unavailable — silently ignore.
-    }
-  }
 
   if (loading) {
     return (
@@ -181,34 +156,6 @@ export default function ProductDetail() {
                 </Link>
 
                 <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={handleShare}
-                      aria-label="Share"
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-stone-700 backdrop-blur transition hover:bg-white"
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="h-5 w-5"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"
-                        />
-                      </svg>
-                    </button>
-                    {copied && (
-                      <span className="absolute right-0 top-12 whitespace-nowrap rounded-lg bg-stone-800 px-2.5 py-1 text-xs text-white shadow-sm">
-                        Link copied!
-                      </span>
-                    )}
-                  </div>
                   <WishlistButton
                     product={product}
                     variant="overlay"
@@ -219,7 +166,11 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          <div className="relative z-10 -mt-10 rounded-3xl bg-white p-6 shadow-xl shadow-rose-100 sm:mx-6 sm:p-8 lg:mx-0 lg:mt-0 lg:p-0 lg:shadow-none">
+          <div
+            className={`relative z-10 rounded-3xl bg-white p-6 shadow-xl shadow-rose-100 sm:mx-6 sm:p-8 lg:mx-0 lg:mt-0 lg:p-0 lg:shadow-none ${
+              gallery.length > 1 ? "mt-3" : "-mt-10"
+            }`}
+          >
             <span className="w-fit rounded-full bg-rose-100 px-3 py-1 text-xs font-medium text-rose-700">
               {formatCategory(product.category)}
             </span>
@@ -244,9 +195,9 @@ export default function ProductDetail() {
             <h2 className="font-serif text-2xl font-bold text-stone-800">
               You May Also Like
             </h2>
-            <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-6 grid grid-cols-3 gap-x-2 gap-y-6 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-4">
               {related.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <OurProductCard key={p.id} product={p} />
               ))}
             </div>
           </section>

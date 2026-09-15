@@ -12,22 +12,22 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link
       to={`/product/${product.id}`}
-      className="group flex flex-col overflow-hidden rounded-xl border border-rose-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:rounded-2xl"
+      className="group flex flex-col overflow-hidden border border-stone-200 bg-white transition-colors duration-300 hover:border-rose-300"
     >
       <div className="relative aspect-square w-full overflow-hidden bg-rose-50">
         <ProductImage
           src={product.image_url}
           alt={product.name}
           fallback={FALLBACK_IMAGE}
-          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
         <WishlistButton
           product={product}
           className="absolute right-1.5 top-1.5 h-7 w-7 shadow-sm sm:right-2 sm:top-2 sm:h-9 sm:w-9"
         />
       </div>
-      <div className="flex flex-1 flex-col gap-1 p-2.5 sm:gap-2 sm:p-4">
-        <span className="hidden w-fit rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-700 sm:inline-block">
+      <div className="flex flex-1 flex-col gap-1 border-t border-stone-100 p-3 sm:gap-1.5 sm:p-5">
+        <span className="hidden text-xs font-medium text-rose-600 sm:block">
           {formatCategory(product.category)}
         </span>
         <h3 className="line-clamp-1 text-sm font-semibold text-stone-800 sm:text-lg">
@@ -37,7 +37,7 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.description}
         </p>
         <div className="mt-auto flex items-center justify-between gap-2 pt-1.5 sm:flex-col sm:items-stretch sm:gap-2 sm:pt-3">
-          <span className="text-sm font-bold text-rose-600 sm:text-xl">
+          <span className="text-sm font-bold text-stone-900 sm:text-xl">
             AED {product.price}
           </span>
           <WhatsAppButton
