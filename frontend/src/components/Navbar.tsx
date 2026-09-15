@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import logo from "../assets/logo-180.png";
 import { buildGeneralWhatsAppLink } from "../lib/whatsapp";
@@ -11,12 +10,12 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? "text-rose-600" : "text-stone-600"
   }`;
 
+/** Desktop/tablet only — mobile uses BottomNav instead (see PublicLayout). */
 export default function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false);
   const { items } = useWishlist();
 
   return (
-    <header className="sticky top-0 z-20 border-b border-rose-100 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-20 hidden border-b border-rose-100 bg-white/90 backdrop-blur sm:block">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <Link
           to="/"
@@ -30,7 +29,7 @@ export default function Navbar() {
           Casa Lilly
         </Link>
 
-        <nav className="hidden items-center gap-8 sm:flex">
+        <nav className="flex items-center gap-8">
           <NavLink to="/" end className={navLinkClass}>
             Home
           </NavLink>
@@ -72,69 +71,12 @@ export default function Navbar() {
             href={buildGeneralWhatsAppLink(SHOP_PHONE)}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden rounded-full bg-rose-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 sm:inline-block"
+            className="rounded-full bg-rose-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
           >
             Contact Us
           </a>
-          <button
-            type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label="Toggle menu"
-            className="rounded-lg border border-rose-200 p-2 text-stone-600 sm:hidden"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="h-5 w-5"
-            >
-              <path strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
-            </svg>
-          </button>
         </div>
       </div>
-
-      {menuOpen && (
-        <nav className="flex flex-col gap-1 border-t border-rose-100 bg-white px-4 py-3 sm:hidden">
-          <Link
-            to="/"
-            onClick={() => setMenuOpen(false)}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-rose-50"
-          >
-            Home
-          </Link>
-          <Link
-            to="/shop"
-            onClick={() => setMenuOpen(false)}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-rose-50"
-          >
-            Shop
-          </Link>
-          <Link
-            to="/about"
-            onClick={() => setMenuOpen(false)}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-rose-50"
-          >
-            About Us
-          </Link>
-          <Link
-            to="/wishlist"
-            onClick={() => setMenuOpen(false)}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-rose-50"
-          >
-            Wishlist{items.length > 0 ? ` (${items.length})` : ""}
-          </Link>
-          <a
-            href={buildGeneralWhatsAppLink(SHOP_PHONE)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 rounded-full bg-rose-600 px-4 py-2 text-center text-sm font-semibold text-white"
-          >
-            Contact Us
-          </a>
-        </nav>
-      )}
     </header>
   );
 }
