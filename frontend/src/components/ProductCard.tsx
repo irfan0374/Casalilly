@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { Product } from "../types";
+import ProductImage from "./ProductImage";
 import WhatsAppButton from "./WhatsAppButton";
 import WishlistButton from "./WishlistButton";
 import { formatCategory } from "../lib/categories";
@@ -14,14 +15,11 @@ export default function ProductCard({ product }: { product: Product }) {
       className="group flex flex-col overflow-hidden rounded-xl border border-rose-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:rounded-2xl"
     >
       <div className="relative aspect-square w-full overflow-hidden bg-rose-50">
-        <img
-          src={product.image_url || FALLBACK_IMAGE}
+        <ProductImage
+          src={product.image_url}
           alt={product.name}
+          fallback={FALLBACK_IMAGE}
           className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-          loading="lazy"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
-          }}
         />
         <WishlistButton
           product={product}

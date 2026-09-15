@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { Link } from "react-router-dom";
+import ProductImage from "./ProductImage";
 import type { Product } from "../types";
 
 const FALLBACK_IMAGE =
@@ -59,10 +60,24 @@ export default function BestSellerCarousel({
     rafRef.current = requestAnimationFrame(updateStyles);
   }, [updateStyles]);
 
-  useEffect(() => {
-    scheduleUpdate();
+  useLayoutEffect(() => {
     const track = trackRef.current;
     if (!track) return;
+
+    // Center on the middle item (not the first) so both arrows are usable
+    // right away — starting at item 1 always disabled the "previous" arrow,
+    // which hid the fact that you can scroll either direction. Runs in a
+    // layout effect (before paint) so there's no flash of item 1 centered
+    // first.
+    const first = itemRefs.current.find(Boolean);
+    if (first && products.length > 1) {
+      const gap = parseFloat(getComputedStyle(track).columnGap || "0") || 0;
+      const step = first.getBoundingClientRect().width + gap;
+      const middleIndex = Math.floor((products.length - 1) / 2);
+      track.scrollLeft = step * middleIndex;
+    }
+
+    scheduleUpdate();
     const ro = new ResizeObserver(scheduleUpdate);
     ro.observe(track);
     window.addEventListener("resize", scheduleUpdate);
@@ -195,15 +210,12 @@ function CarouselCard({ product }: { product: Product }) {
       className="flex flex-col items-center text-center"
     >
       <div className="relative aspect-square w-full overflow-hidden rounded-3xl bg-rose-50">
-        <img
-          src={product.image_url || FALLBACK_IMAGE}
+        <ProductImage
+          src={product.image_url}
           alt={product.name}
+          fallback={FALLBACK_IMAGE}
           draggable={false}
           className="h-full w-full object-cover"
-          loading="lazy"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
-          }}
         />
       </div>
       <h3 className="mt-4 line-clamp-1 text-sm font-semibold text-stone-800 sm:text-base">

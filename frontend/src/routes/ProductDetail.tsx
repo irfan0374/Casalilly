@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getProduct, getProducts } from "../api/products";
+import ProductImage from "../components/ProductImage";
 import WhatsAppButton from "../components/WhatsAppButton";
 import WishlistButton from "../components/WishlistButton";
 import PublicLayout from "../components/PublicLayout";
@@ -148,13 +149,13 @@ export default function ProductDetail() {
             )}
 
             <div className="relative aspect-[4/5] w-full flex-1 overflow-hidden rounded-3xl bg-rose-50 sm:aspect-[16/10] lg:aspect-[4/5] lg:sticky lg:top-24">
-              <img
-                src={activeUrl || FALLBACK_IMAGE}
+              <ProductImage
+                key={activeUrl}
+                src={activeUrl}
                 alt={product.name}
+                fallback={FALLBACK_IMAGE}
+                loading="eager"
                 className="h-full w-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
-                }}
               />
 
               <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
