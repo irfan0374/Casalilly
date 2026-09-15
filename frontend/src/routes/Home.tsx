@@ -111,7 +111,7 @@ const stats = [
           <h2 className="font-serif text-2xl font-bold text-stone-800 sm:text-3xl">
             Our Categories
           </h2>
-          <div className="mt-8 flex flex-wrap justify-center gap-8">
+          <div className="scrollbar-none mt-8 grid auto-cols-max grid-flow-col grid-rows-2 justify-start gap-x-5 gap-y-6 overflow-x-auto px-1 pb-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-8 sm:overflow-visible sm:px-0 sm:pb-0">
             {categories.map((category) => {
               const image = categoryImage(category);
               const Icon = categoryIcon(category);
@@ -119,7 +119,7 @@ const stats = [
                 <Link
                   key={category}
                   to={`/shop?category=${category}`}
-                  className="group flex w-24 flex-col items-center gap-2"
+                  className="group flex w-20 flex-col items-center gap-2 sm:w-24"
                 >
                   <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-rose-50 ring-1 ring-rose-100 transition group-hover:ring-rose-300">
                     {image ? (
