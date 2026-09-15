@@ -5,7 +5,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     JWT_SECRET: str
     JWT_ALGORITHM: str = "HS256"
-    JWT_EXPIRE_MINUTES: int = 1440
+    # 7 days — the admin panel is used infrequently, so a short-lived token
+    # just means getting logged out mid-task more often for no real security
+    # benefit here (single admin account, not handling end-user sessions).
+    JWT_EXPIRE_MINUTES: int = 10080
     CLOUDINARY_CLOUD_NAME: str
     CLOUDINARY_API_KEY: str
     CLOUDINARY_API_SECRET: str
