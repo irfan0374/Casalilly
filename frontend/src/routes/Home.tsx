@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Flower2, Package, Smile, Sparkles } from "lucide-react";
 import { getCategories, getProducts } from "../api/products";
 import { getHeroSlides } from "../api/heroSlides";
-import BestSellerCarousel from "../components/BestSellerCarousel";
+import BestSellersSection from "../components/BestSellersSection";
 import HeroSlideshow from "../components/HeroSlideshow";
 import OurProductsSection from "../components/OurProductsSection";
-import ProductCardSkeleton from "../components/ProductCardSkeleton";
 import PublicLayout from "../components/PublicLayout";
 import { categoryIcon, categoryImage, formatCategory } from "../lib/categories";
 import storyImage from "../assets/image1.jpeg";
@@ -15,50 +14,43 @@ import type { HeroSlide, Product } from "../types";
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categoriesStuck, setCategoriesStuck] = useState(false);
+  const categoriesSentinelRef = useRef<HTMLDivElement>(null);
+
+  // Shows a compact, single-line "mini bar" pinned to the top (mobile only)
+  // once the normal 2-line category grid has scrolled out of view — driven
+  // by a sentinel placed right after that grid. The mini bar is
+  // position:fixed (out of flow), so toggling it never changes page height
+  // or feeds back into the very scroll position that triggers it — the bug
+  // a position:sticky version of this same toggle would have.
+  useEffect(() => {
+    const sentinel = categoriesSentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setCategoriesStuck(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [categories.length]);
 
   useEffect(() => {
-    Promise.all([
-      getProducts(),
-      getProducts(undefined, true),
-      getCategories(),
-      getHeroSlides(),
-    ])
-      .then(([productData, featuredData, categoryData, heroData]) => {
+    Promise.all([getProducts(), getCategories(), getHeroSlides()])
+      .then(([productData, categoryData, heroData]) => {
         setProducts(productData);
-        setFeaturedProducts(featuredData);
         setCategories(categoryData);
         setHeroSlides(heroData);
       })
       .catch(() => {
         setProducts([]);
-        setFeaturedProducts([]);
         setCategories([]);
         setHeroSlides([]);
       })
       .finally(() => setLoading(false));
   }, []);
-
-  // Lead with admin-curated best sellers, then top up with a random pick of
-  // other products so the carousel always has enough items to scroll through
-  // even when only one or two have been marked as featured. Capped at 4.
-  const BEST_SELLERS_COUNT = 4;
-  const featured = useMemo(() => {
-    if (featuredProducts.length >= BEST_SELLERS_COUNT) {
-      return featuredProducts.slice(0, BEST_SELLERS_COUNT);
-    }
-    const featuredIds = new Set(featuredProducts.map((p) => p.id));
-    const fillers = products
-      .filter((p) => !featuredIds.has(p.id))
-      .sort(() => Math.random() - 0.5);
-    return [
-      ...featuredProducts,
-      ...fillers.slice(0, BEST_SELLERS_COUNT - featuredProducts.length),
-    ];
-  }, [featuredProducts, products]);
 
 const stats = [
       { icon: Flower2, value: `${products.length}+`, label: "Products Available" },
@@ -171,7 +163,49 @@ const stats = [
               );
             })}
           </div>
+          {/* Zero-height marker right after the normal category grid — once
+              it scrolls out of view, the fixed mini bar below takes over. */}
+          <div ref={categoriesSentinelRef} aria-hidden="true" />
         </section>
+      )}
+
+      {/* Compact single-line category bar — fixed (not sticky) so toggling
+          it never resizes the page or feeds back into the scroll position
+          that triggers it. Mobile only; fades/slides in once the normal
+          2-line grid above has scrolled past. */}
+      {!loading && categories.length > 0 && (
+        <div
+          className={`fixed inset-x-0 top-0 z-30 border-b border-rose-100 bg-stone-50/95 backdrop-blur transition-transform duration-200 ease-out sm:hidden ${
+            categoriesStuck ? "translate-y-0" : "-translate-y-full"
+          }`}
+          aria-hidden={!categoriesStuck}
+        >
+          <div className="scrollbar-none flex gap-4 overflow-x-auto px-4 py-2.5">
+            {categories.map((category) => {
+              const image = categoryImage(category);
+              const Icon = categoryIcon(category);
+              return (
+                <Link
+                  key={category}
+                  to={`/shop?category=${category}`}
+                  tabIndex={categoriesStuck ? 0 : -1}
+                  className="group flex flex-shrink-0 items-center gap-2"
+                >
+                  <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-rose-50 ring-1 ring-rose-100">
+                    {image ? (
+                      <img src={image} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <Icon className="h-4 w-4 text-rose-500" strokeWidth={1.5} aria-hidden="true" />
+                    )}
+                  </span>
+                  <span className="whitespace-nowrap text-xs font-medium text-stone-600 group-hover:text-rose-600">
+                    {formatCategory(category)}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       )}
 
 
@@ -212,40 +246,10 @@ const stats = [
 
     
 
-      {/* Best sellers preview */}
-      <section className="mx-auto max-w-6xl pt-16 pb-6">
-        <div className="mb-8 flex items-center justify-between px-4">
-          <h2 className="font-serif text-2xl font-bold text-stone-800 sm:text-3xl">
-            Best Sellers
-          </h2>
-          <Link
-            to="/shop"
-            className="text-sm font-semibold text-rose-600 hover:underline"
-          >
-            View All →
-          </Link>
-        </div>
+      {/* Best sellers — tabbed by category */}
+      <BestSellersSection categories={categories} />
 
-        {loading && (
-          <div className="grid grid-cols-2 gap-3 px-4 sm:gap-6 md:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <ProductCardSkeleton key={i} />
-            ))}
-          </div>
-        )}
-
-        {!loading && featured.length === 0 && (
-          <p className="py-12 text-center text-stone-400">
-            Products are coming soon — check back shortly!
-          </p>
-        )}
-
-        {!loading && featured.length > 0 && (
-          <BestSellerCarousel products={featured} />
-        )}
-      </section>
-
-      {/* Our Products — tabbed by category, 6 items */}
+      {/* Our Products — tabbed by category, 10 items */}
       <OurProductsSection categories={categories} />
 
         {/* Personalized touch banner  */}

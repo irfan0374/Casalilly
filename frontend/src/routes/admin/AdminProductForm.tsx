@@ -150,7 +150,8 @@ export default function AdminProductForm() {
               required
               min={0}
               step="0.01"
-              value={form.price}
+              placeholder="0.00"
+              value={form.price || ""}
               onChange={(e) =>
                 updateField("price", parseFloat(e.target.value) || 0)
               }

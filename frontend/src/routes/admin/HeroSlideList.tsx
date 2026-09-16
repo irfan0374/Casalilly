@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   adminListHeroSlides,
   deleteHeroSlide,
   updateHeroSlide,
 } from "../../api/heroSlides";
+import AdminTableSkeleton from "../../components/admin/AdminTableSkeleton";
 import { useAuth } from "../../context/AuthContext";
 import type { HeroSlide } from "../../types";
 
@@ -77,7 +79,7 @@ export default function HeroSlideList() {
         </Link>
       </div>
 
-      {loading && <p className="py-16 text-center text-stone-400">Loading…</p>}
+      {loading && <AdminTableSkeleton columns={5} rows={4} />}
       {!loading && error && (
         <p className="py-16 text-center text-red-500">{error}</p>
       )}
@@ -140,17 +142,21 @@ export default function HeroSlideList() {
                       </button>
                       <Link
                         to={`/admin/hero-slides/${slide.id}/edit`}
-                        className="text-rose-600 hover:underline"
+                        aria-label="Edit hero banner"
+                        title="Edit"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50"
                       >
-                        Edit
+                        <Pencil className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
                       </Link>
                       <button
                         type="button"
                         onClick={() => handleDelete(slide)}
                         disabled={busyId === slide.id}
-                        className="text-red-500 hover:underline disabled:opacity-50"
+                        aria-label="Delete hero banner"
+                        title="Delete"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-50 disabled:opacity-50"
                       >
-                        Delete
+                        <Trash2 className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
                       </button>
                     </div>
                   </td>

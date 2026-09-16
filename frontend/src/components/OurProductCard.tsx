@@ -21,7 +21,7 @@ export default function OurProductCard({ product }: { product: Product }) {
           src={product.image_url}
           alt={product.name}
           fallback={FALLBACK_IMAGE}
-          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          className="h-full w-full object-cover transition duration-300 group-hover:scale-105 "
         />
       </div>
       <div className="flex flex-col gap-1 pt-2 sm:gap-1.5 sm:pt-3">

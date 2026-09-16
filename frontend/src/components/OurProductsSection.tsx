@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { getProducts } from "../api/products";
 import OurProductsGrid, { GRID_CLASS } from "./OurProductsGrid";
 import ProductCardSkeleton from "./ProductCardSkeleton";
@@ -9,6 +10,10 @@ import type { Product } from "../types";
 // the catalog (bouquets, gift baskets, anniversary, other…) stays out of
 // this homepage section and is only reachable via the full Shop page.
 const VISIBLE_CATEGORIES = ["flowers", "plants", "chocolate"];
+
+// Capped so the homepage preview stays a taste of the category, not the
+// whole catalog — "View All" leads to the full, uncapped list on Shop.
+const PREVIEW_COUNT = 10;
 
 // Label override just for this tab row — "plants" reads as "Indoor Plants"
 // here without changing the shared label used on the Shop/Categories pages.
@@ -42,7 +47,7 @@ export default function OurProductsSection({
     setLoading(true);
     getProducts(active)
       .then((data) => {
-        if (!cancelled) setProducts(data);
+        if (!cancelled) setProducts(data.slice(0, PREVIEW_COUNT));
       })
       .catch(() => {
         if (!cancelled) setProducts([]);
@@ -58,12 +63,20 @@ export default function OurProductsSection({
   if (orderedCategories.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-6xl px-4 pt-6 pb-16">
-      <h2 className="text-center font-serif text-2xl font-bold text-stone-800 sm:text-3xl">
-        Our Products
-      </h2>
+    <section className="mx-auto max-w-6xl px-4 pt-6  pb-8 ">
+      <div className="flex items-center justify-between">
+        <h2 className="font-serif text-2xl font-bold text-stone-800 sm:text-3xl">
+          Our Products
+        </h2>
+        <Link
+          to={`/shop?category=${active ?? ""}`}
+          className="text-sm font-semibold text-rose-600 hover:underline"
+        >
+          View All →
+        </Link>
+      </div>
 
-      <div className="scrollbar-none mt-6 flex justify-start gap-6 overflow-x-auto pb-1 sm:mt-8 sm:justify-center sm:overflow-visible sm:pb-0">
+      <div className="scrollbar-none mt-6 flex justify-start gap-6 overflow-x-auto pb-1 sm:mt-8 sm:justify-start sm:overflow-visible sm:pb-0">
         {orderedCategories.map((category) => (
           <button
             key={category}

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Pencil, Trash2 } from "lucide-react";
 import type { Product } from "../../types";
 
 interface ProductTableProps {
@@ -64,20 +65,24 @@ export default function ProductTable({
                 )}
               </td>
               <td className="px-4 py-3 text-right">
-                <div className="flex justify-end gap-3">
+                <div className="flex justify-end gap-1.5">
                   <Link
                     to={`/admin/products/${product.id}/edit`}
-                    className="text-rose-600 hover:underline"
+                    aria-label="Edit product"
+                    title="Edit"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50"
                   >
-                    Edit
+                    <Pencil className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
                   </Link>
                   <button
                     type="button"
                     onClick={() => onDelete(product.id)}
                     disabled={deletingId === product.id}
-                    className="text-red-500 hover:underline disabled:opacity-50"
+                    aria-label="Delete product"
+                    title="Delete"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-50 disabled:opacity-50"
                   >
-                    {deletingId === product.id ? "Deleting…" : "Delete"}
+                    <Trash2 className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
                   </button>
                 </div>
               </td>
