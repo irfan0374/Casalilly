@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Pencil, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Pencil, Trash2 } from "lucide-react";
 import {
   adminListHeroSlides,
   deleteHeroSlide,
@@ -136,9 +136,15 @@ export default function HeroSlideList() {
                         type="button"
                         onClick={() => handleToggleActive(slide)}
                         disabled={busyId === slide.id}
-                        className="text-stone-600 hover:underline disabled:opacity-50"
+                        aria-label={slide.is_active ? "Disable hero banner" : "Activate hero banner"}
+                        title={slide.is_active ? "Disable" : "Activate"}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 disabled:opacity-50"
                       >
-                        {slide.is_active ? "Disable" : "Activate"}
+                        {slide.is_active ? (
+                          <Eye className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+                        ) : (
+                          <EyeOff className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+                        )}
                       </button>
                       <Link
                         to={`/admin/hero-slides/${slide.id}/edit`}

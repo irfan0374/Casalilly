@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import { Headset, Leaf, RotateCcw, ShieldCheck, type LucideIcon } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -172,9 +171,9 @@ export default function RotatingPlantShowcase() {
   if (FRAME_URLS.length === 0) return null;
 
   return (
-    <section ref={sectionRef} className="mx-auto max-w-5xl px-4 py-16">
+    <section ref={sectionRef} className="mx-auto max-w-5xl px-4 pt-6">
       <h2 className="text-center font-serif text-2xl font-bold text-stone-800 sm:text-3xl">
-        Why Choose Casa Lilly?
+        Why Choose Casalily?
       </h2>
 
       <div className="mt-10 flex items-center justify-center gap-3 sm:gap-8 lg:gap-14">
@@ -198,14 +197,6 @@ export default function RotatingPlantShowcase() {
         </div>
       </div>
 
-      <div className="mt-8 flex justify-center">
-        <Link
-          to="/shop?category=plants"
-          className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700"
-        >
-          Shop Indoor Plants
-        </Link>
-      </div>
     </section>
   );
 }

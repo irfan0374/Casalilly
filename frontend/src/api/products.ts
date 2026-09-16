@@ -48,7 +48,7 @@ export async function createProduct(
 
 export async function updateProduct(
   id: string | number,
-  input: ProductInput,
+  input: Partial<ProductInput>,
   token: string
 ): Promise<Product> {
   const { data } = await apiClient.put<Product>(

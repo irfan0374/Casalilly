@@ -1,17 +1,21 @@
 import { Link } from "react-router-dom";
-import { Pencil, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Pencil, Trash2 } from "lucide-react";
 import type { Product } from "../../types";
 
 interface ProductTableProps {
   products: Product[];
   onDelete: (id: Product["id"]) => void;
   deletingId: Product["id"] | null;
+  onToggleActive: (product: Product) => void;
+  togglingId: Product["id"] | null;
 }
 
 export default function ProductTable({
   products,
   onDelete,
   deletingId,
+  onToggleActive,
+  togglingId,
 }: ProductTableProps) {
   return (
     <div className="overflow-x-auto rounded-xl border border-rose-100">
@@ -66,6 +70,20 @@ export default function ProductTable({
               </td>
               <td className="px-4 py-3 text-right">
                 <div className="flex justify-end gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => onToggleActive(product)}
+                    disabled={togglingId === product.id}
+                    aria-label={product.is_active ? "Disable product" : "Activate product"}
+                    title={product.is_active ? "Disable" : "Activate"}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 disabled:opacity-50"
+                  >
+                    {product.is_active ? (
+                      <Eye className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+                    ) : (
+                      <EyeOff className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+                    )}
+                  </button>
                   <Link
                     to={`/admin/products/${product.id}/edit`}
                     aria-label="Edit product"

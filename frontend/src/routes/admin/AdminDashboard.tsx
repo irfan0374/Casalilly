@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
-import { adminListProducts, deleteProduct, getCategories } from "../../api/products";
+import { adminListProducts, deleteProduct, getCategories, updateProduct } from "../../api/products";
 import AdminTableSkeleton from "../../components/admin/AdminTableSkeleton";
 import ProductTable from "../../components/admin/ProductTable";
 import { formatCategory } from "../../lib/categories";
@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<Product["id"] | null>(null);
+  const [togglingId, setTogglingId] = useState<Product["id"] | null>(null);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [page, setPage] = useState(1);
@@ -59,6 +60,25 @@ export default function AdminDashboard() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const page_ = Math.min(page, totalPages);
   const paged = filtered.slice((page_ - 1) * PAGE_SIZE, page_ * PAGE_SIZE);
+
+  async function handleToggleActive(product: Product) {
+    if (!token) return;
+    setTogglingId(product.id);
+    try {
+      const updated = await updateProduct(
+        product.id,
+        { is_active: !product.is_active },
+        token
+      );
+      setProducts((prev) =>
+        prev.map((p) => (p.id === product.id ? updated : p))
+      );
+    } catch {
+      window.alert("Failed to update product.");
+    } finally {
+      setTogglingId(null);
+    }
+  }
 
   async function handleDelete(id: Product["id"]) {
     if (!token) return;
@@ -142,6 +162,8 @@ export default function AdminDashboard() {
             products={paged}
             onDelete={handleDelete}
             deletingId={deletingId}
+            onToggleActive={handleToggleActive}
+            togglingId={togglingId}
           />
 
           {totalPages > 1 && (

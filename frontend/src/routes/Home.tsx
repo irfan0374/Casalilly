@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Flower2, Package, Smile, Sparkles } from "lucide-react";
 import { getCategories, getProducts } from "../api/products";
@@ -52,6 +52,14 @@ export default function Home() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // Best Sellers should only offer tabs for categories that actually have
+  // products — an empty category tab would just show "No products in this
+  // category yet." every time, which isn't useful to click through to.
+  const categoriesWithProducts = useMemo(
+    () => categories.filter((c) => products.some((p) => p.category === c)),
+    [categories, products]
+  );
 
 const stats = [
       { icon: Flower2, value: `${products.length}+`, label: "Products Available" },
@@ -251,7 +259,7 @@ const stats = [
       <RotatingPlantShowcase />
 
       {/* Best sellers — tabbed by category */}
-      <BestSellersSection categories={categories} />
+      <BestSellersSection categories={categoriesWithProducts} />
 
       {/* Our Products — tabbed by category, 10 items */}
       <OurProductsSection categories={categories} />
