@@ -51,12 +51,11 @@ function useTypewriter() {
   return text;
 }
 
-/** Search "bar" overlaid on the hero — really a button, not a real text
- * input. Tapping it opens the full-screen SearchOverlay instead of letting
- * the visitor type in place: a real <input> here would need a small
- * font-size to fit the pill, and any focused input under 16px triggers an
- * automatic page zoom on iOS/Android — which read as "the site zooms in
- * when I tap search". */
+/** Search "bar" — really a button, not a real text input. Tapping it opens
+ * the full-screen SearchOverlay instead of letting the visitor type in
+ * place: a real <input> here would need a small font-size to fit the pill,
+ * and any focused input under 16px triggers an automatic page zoom on
+ * iOS/Android — which read as "the site zooms in when I tap search". */
 export default function HeroSearchBar({ onOpen }: { onOpen: () => void }) {
   const typedPlaceholder = useTypewriter();
 
@@ -64,12 +63,12 @@ export default function HeroSearchBar({ onOpen }: { onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="flex w-full max-w-md items-center gap-2 rounded-full border border-white/40 bg-white/20 px-4 py-2.5 text-left shadow-lg backdrop-blur-xl transition hover:bg-white/30 sm:max-w-lg sm:py-3"
+      className="flex w-full max-w-md items-center gap-2 rounded-full border border-rose-100 bg-white px-4 py-2.5 text-left shadow-sm transition hover:border-rose-200 hover:shadow-md sm:max-w-lg sm:py-3"
     >
-      <Search className="h-4 w-4 shrink-0 text-white" strokeWidth={2} aria-hidden="true" />
-      <span className="w-full min-w-0 truncate text-sm text-white/85">
+      <Search className="h-4 w-4 shrink-0 text-rose-400" strokeWidth={2} aria-hidden="true" />
+      <span className="w-full min-w-0 truncate text-sm text-stone-500">
         Search "{typedPlaceholder}
-        <span className="ml-px inline-block w-px animate-pulse bg-white/85">&nbsp;</span>
+        <span className="ml-px inline-block w-px animate-pulse bg-stone-400">&nbsp;</span>
         "
       </span>
     </button>

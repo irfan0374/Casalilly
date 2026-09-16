@@ -4,10 +4,12 @@ import { Flower2, Package, Smile, Sparkles } from "lucide-react";
 import { getCategories, getProducts } from "../api/products";
 import { getHeroSlides } from "../api/heroSlides";
 import BestSellersSection from "../components/BestSellersSection";
+import HeroSearchBar from "../components/HeroSearchBar";
 import HeroSlideshow from "../components/HeroSlideshow";
 import OurProductsSection from "../components/OurProductsSection";
 import PublicLayout from "../components/PublicLayout";
 import RotatingPlantShowcase from "../components/RotatingPlantShowcase";
+import SearchOverlay from "../components/SearchOverlay";
 import { categoryIcon, categoryImage, formatCategory } from "../lib/categories";
 import storyImage from "../assets/image1.jpeg";
 import personalizedImage from "../assets/personalized1.jpeg";
@@ -19,6 +21,7 @@ export default function Home() {
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoriesStuck, setCategoriesStuck] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const categoriesSentinelRef = useRef<HTMLDivElement>(null);
 
   // Shows a compact, single-line "mini bar" pinned to the top (mobile only)
@@ -120,7 +123,12 @@ const stats = [
         </div>
       </section>
 
+      {/* Search — sits right above the categories */}
+      <section className="mx-auto max-w-2xl px-4 pt-6 sm:pt-8">
+        <HeroSearchBar onOpen={() => setSearchOpen(true)} />
+      </section>
 
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {/* Categories */}
       {loading && (
