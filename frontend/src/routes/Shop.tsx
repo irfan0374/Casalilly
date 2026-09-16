@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getCategories, getProducts } from "../api/products";
 import ProductCard from "../components/ProductCard";
@@ -7,7 +7,7 @@ import CategoryFilter from "../components/CategoryFilter";
 import PublicLayout from "../components/PublicLayout";
 import type { Product } from "../types";
 
-const SKELETON_COUNT = 8;
+const PAGE_SIZE = 12;
 
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -18,7 +18,21 @@ export default function Shop() {
   const [categories, setCategories] = useState<string[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const productsRef = useRef<Product[]>([]);
+  // In-flight guard for loadMore — a plain ref so it's checked/set
+  // synchronously within the same tick as the intersection callback,
+  // immune to React 19 StrictMode's dev-only double effect invocation
+  // (which otherwise let two overlapping "load more" fetches both append,
+  // duplicating items).
+  const fetchingMoreRef = useRef(false);
+  // Bumped on every filter change; a page-1 or load-more response is only
+  // applied if it's still the current generation, so a slow response for a
+  // filter the visitor has since changed away from can't get appended.
+  const genRef = useRef(0);
 
   useEffect(() => {
     getCategories()
@@ -27,28 +41,86 @@ export default function Shop() {
       .finally(() => setCategoriesLoading(false));
   }, []);
 
+  // Fetch just the first page whenever the category/search filters change —
+  // the rest is fetched on demand as the visitor scrolls, instead of
+  // loading the entire catalog up front.
   useEffect(() => {
-    let cancelled = false;
+    const gen = ++genRef.current;
+    fetchingMoreRef.current = false;
     setLoading(true);
     setError(null);
-    getProducts(selectedCategory ?? undefined, undefined, searchQuery ?? undefined)
+    setHasMore(true);
+    getProducts(
+      selectedCategory ?? undefined,
+      undefined,
+      searchQuery ?? undefined,
+      0,
+      PAGE_SIZE
+    )
       .then((data) => {
-        if (!cancelled) setProducts(data);
+        if (genRef.current !== gen) return;
+        setProducts(data);
+        setHasMore(data.length === PAGE_SIZE);
       })
       .catch(() => {
-        if (!cancelled) {
+        if (genRef.current === gen) {
           setError(
             "Couldn't load products right now. Please try again shortly."
           );
         }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (genRef.current === gen) setLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
   }, [selectedCategory, searchQuery]);
+
+  useEffect(() => {
+    productsRef.current = products;
+  }, [products]);
+
+  const loadMore = useCallback(() => {
+    if (fetchingMoreRef.current) return;
+    fetchingMoreRef.current = true;
+    const gen = genRef.current;
+    setLoadingMore(true);
+    getProducts(
+      selectedCategory ?? undefined,
+      undefined,
+      searchQuery ?? undefined,
+      productsRef.current.length,
+      PAGE_SIZE
+    )
+      .then((data) => {
+        if (genRef.current !== gen) return;
+        setProducts((prev) => [...prev, ...data]);
+        setHasMore(data.length === PAGE_SIZE);
+      })
+      .catch(() => {
+        if (genRef.current === gen) setHasMore(false);
+      })
+      .finally(() => {
+        fetchingMoreRef.current = false;
+        if (genRef.current === gen) setLoadingMore(false);
+      });
+  }, [selectedCategory, searchQuery]);
+
+  // Reconnects (and so re-checks current intersection) every time the list
+  // grows — a plain IntersectionObserver only fires on enter/exit, but a
+  // short first page can leave the sentinel sitting continuously inside
+  // the rootMargin zone with no further crossing to trigger the next page,
+  // stalling the scroll. Re-observing forces a fresh check each time.
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || loading) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasMore) loadMore();
+      },
+      { rootMargin: "400px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loading, hasMore, loadMore, products.length]);
 
   function handleSelectCategory(category: string | null) {
     setSearchParams(category ? { category } : {});
@@ -96,7 +168,7 @@ export default function Shop() {
 
         {loading && (
           <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+            {Array.from({ length: PAGE_SIZE }).map((_, i) => (
               <ProductCardSkeleton key={i} />
             ))}
           </div>
@@ -115,11 +187,32 @@ export default function Shop() {
         )}
 
         {!loading && !error && products.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+
+            {loadingMore && (
+              <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))}
+              </div>
+            )}
+
+            {/* Fetch trigger for infinite scroll — sits just below the grid,
+                observed with a lookahead margin so the next page loads
+                before the visitor actually hits the bottom. */}
+            <div ref={sentinelRef} className="h-1" aria-hidden="true" />
+
+            {!hasMore && !loadingMore && products.length > PAGE_SIZE && (
+              <p className="py-8 text-center text-sm text-stone-400">
+                You've reached the end.
+              </p>
+            )}
+          </>
         )}
       </main>
     </PublicLayout>

@@ -92,9 +92,11 @@ export default function BestSellersSection({
       </div>
 
       {loading && (
-        <div className="grid grid-cols-2 gap-3 px-4 sm:gap-6 md:grid-cols-4">
+        <div className="flex gap-2 overflow-hidden px-[calc(50%-19vw)] py-6 sm:gap-3 sm:px-[calc(50%-115px)] lg:gap-4 lg:px-[calc(50%-130px)]">
           {Array.from({ length: 4 }).map((_, i) => (
-            <ProductCardSkeleton key={i} />
+            <div key={i} className="w-[38vw] flex-shrink-0 sm:w-[230px] lg:w-[260px]">
+              <ProductCardSkeleton />
+            </div>
           ))}
         </div>
       )}

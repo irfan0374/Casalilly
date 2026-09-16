@@ -22,6 +22,8 @@ def list_products(
     category: Optional[str] = None,
     featured: Optional[bool] = None,
     search: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
     db: Session = Depends(get_db),
 ) -> List[Product]:
     query = db.query(Product).filter(Product.is_active.is_(True))
@@ -34,7 +36,12 @@ def list_products(
         query = query.filter(
             (Product.name.ilike(pattern)) | (Product.description.ilike(pattern))
         )
-    return query.order_by(Product.created_at.desc()).all()
+    return (
+        query.order_by(Product.created_at.desc(), Product.id.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 @public_router.get("/products/{product_id}", response_model=ProductOut)

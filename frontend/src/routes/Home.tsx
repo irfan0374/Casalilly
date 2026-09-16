@@ -189,13 +189,13 @@ const stats = [
                   key={category}
                   to={`/shop?category=${category}`}
                   tabIndex={categoriesStuck ? 0 : -1}
-                  className="group flex flex-shrink-0 items-center gap-2"
+                  className="group flex flex-shrink-0 items-center gap-2 rounded-full border border-rose-100 bg-white py-1 pl-1 pr-3 transition hover:border-rose-300"
                 >
-                  <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-rose-50 ring-1 ring-rose-100">
+                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-rose-50">
                     {image ? (
                       <img src={image} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <Icon className="h-4 w-4 text-rose-500" strokeWidth={1.5} aria-hidden="true" />
+                      <Icon className="h-3.5 w-3.5 text-rose-500" strokeWidth={1.5} aria-hidden="true" />
                     )}
                   </span>
                   <span className="whitespace-nowrap text-xs font-medium text-stone-600 group-hover:text-rose-600">

@@ -4,12 +4,16 @@ import type { Product, ProductInput, UploadResponse } from "../types";
 export async function getProducts(
   category?: string,
   featured?: boolean,
-  search?: string
+  search?: string,
+  skip?: number,
+  limit?: number
 ): Promise<Product[]> {
-  const params: Record<string, string | boolean> = {};
+  const params: Record<string, string | boolean | number> = {};
   if (category) params.category = category;
   if (featured !== undefined) params.featured = featured;
   if (search) params.search = search;
+  if (skip !== undefined) params.skip = skip;
+  if (limit !== undefined) params.limit = limit;
   const { data } = await apiClient.get<Product[]>("/products", { params });
   return data;
 }
