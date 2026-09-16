@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import HeroSearchBar from "./HeroSearchBar";
+import SearchOverlay from "./SearchOverlay";
 import type { HeroSlide } from "../types";
 
 const AUTO_ROTATE_MS = 6000;
@@ -9,6 +10,7 @@ const AUTO_ROTATE_MS = 6000;
  * admins can add more without the homepage needing any other change. */
 export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
   const [index, setIndex] = useState(0);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     if (slides.length < 2) return;
@@ -57,8 +59,10 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
         </div>
 
         <div className="absolute inset-x-0 top-3 z-20 flex justify-center px-4 sm:top-5">
-          <HeroSearchBar />
+          <HeroSearchBar onOpen={() => setSearchOpen(true)} />
         </div>
+
+        <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
 
         {slides.length > 1 && (
           <>

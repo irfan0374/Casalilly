@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 
 const SUGGESTIONS = [
@@ -14,15 +13,13 @@ const PAUSE_FULL_MS = 1300;
 const PAUSE_EMPTY_MS = 400;
 
 /** Typewriter effect cycling through SUGGESTIONS: types a word out, pauses,
- * deletes it, then moves to the next — only while the visitor hasn't typed
- * anything themselves. */
-function useTypewriter(active: boolean) {
+ * deletes it, then moves to the next. */
+function useTypewriter() {
   const [wordIndex, setWordIndex] = useState(0);
   const [text, setText] = useState("");
   const [phase, setPhase] = useState<"typing" | "pausing" | "deleting">("typing");
 
   useEffect(() => {
-    if (!active) return;
     const word = SUGGESTIONS[wordIndex];
 
     if (phase === "typing") {
@@ -49,47 +46,32 @@ function useTypewriter(active: boolean) {
       setPhase("typing");
     }, PAUSE_EMPTY_MS);
     return () => clearTimeout(t);
-  }, [active, phase, text, wordIndex]);
+  }, [phase, text, wordIndex]);
 
   return text;
 }
 
-/** Search bar overlaid on the hero — placeholder types itself out through
- * suggestions when the visitor hasn't typed anything, then submits to the
- * Shop page's ?search= filter. */
-export default function HeroSearchBar() {
-  const navigate = useNavigate();
-  const [query, setQuery] = useState("");
-  const typedPlaceholder = useTypewriter(!query);
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = query.trim();
-    navigate(trimmed ? `/shop?search=${encodeURIComponent(trimmed)}` : "/shop");
-  }
+/** Search "bar" overlaid on the hero — really a button, not a real text
+ * input. Tapping it opens the full-screen SearchOverlay instead of letting
+ * the visitor type in place: a real <input> here would need a small
+ * font-size to fit the pill, and any focused input under 16px triggers an
+ * automatic page zoom on iOS/Android — which read as "the site zooms in
+ * when I tap search". */
+export default function HeroSearchBar({ onOpen }: { onOpen: () => void }) {
+  const typedPlaceholder = useTypewriter();
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex w-full max-w-md items-center gap-2 rounded-full border border-white/40 bg-white/20 px-4 py-2.5 shadow-lg backdrop-blur-xl transition focus-within:border-white/70 focus-within:bg-white/30 sm:max-w-lg sm:py-3"
+    <button
+      type="button"
+      onClick={onOpen}
+      className="flex w-full max-w-md items-center gap-2 rounded-full border border-white/40 bg-white/20 px-4 py-2.5 text-left shadow-lg backdrop-blur-xl transition hover:bg-white/30 sm:max-w-lg sm:py-3"
     >
       <Search className="h-4 w-4 shrink-0 text-white" strokeWidth={2} aria-hidden="true" />
-      <span className="relative w-full min-w-0 text-left">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          aria-label="Search products"
-          className="peer w-full min-w-0 bg-transparent text-sm text-white placeholder:text-transparent focus:outline-none"
-        />
-        {!query && (
-          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center text-sm text-white/85">
-            Search "{typedPlaceholder}
-            <span className="ml-px inline-block w-px animate-pulse bg-white/85">&nbsp;</span>
-            "
-          </span>
-        )}
+      <span className="w-full min-w-0 truncate text-sm text-white/85">
+        Search "{typedPlaceholder}
+        <span className="ml-px inline-block w-px animate-pulse bg-white/85">&nbsp;</span>
+        "
       </span>
-    </form>
+    </button>
   );
 }

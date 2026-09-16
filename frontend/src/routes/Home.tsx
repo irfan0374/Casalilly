@@ -7,6 +7,7 @@ import BestSellersSection from "../components/BestSellersSection";
 import HeroSlideshow from "../components/HeroSlideshow";
 import OurProductsSection from "../components/OurProductsSection";
 import PublicLayout from "../components/PublicLayout";
+import RotatingPlantShowcase from "../components/RotatingPlantShowcase";
 import { categoryIcon, categoryImage, formatCategory } from "../lib/categories";
 import storyImage from "../assets/image1.jpeg";
 import personalizedImage from "../assets/personalized1.jpeg";
@@ -245,6 +246,9 @@ const stats = [
 </section>
 
     
+
+      {/* Rotating plant showcase — scroll-scrubbed turntable animation */}
+      <RotatingPlantShowcase />
 
       {/* Best sellers — tabbed by category */}
       <BestSellersSection categories={categories} />
