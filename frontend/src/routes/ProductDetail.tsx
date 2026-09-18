@@ -7,6 +7,7 @@ import WhatsAppButton from "../components/WhatsAppButton";
 import WishlistButton from "../components/WishlistButton";
 import PublicLayout from "../components/PublicLayout";
 import OurProductCard from "../components/OurProductCard";
+import ProductDetailSkeleton from "../components/ProductDetailSkeleton";
 import type { Product } from "../types";
 import { formatCategory } from "../lib/categories";
 import { productGallery } from "../lib/gallery";
@@ -106,7 +107,7 @@ export default function ProductDetail() {
   if (loading) {
     return (
       <PublicLayout>
-        <p className="py-24 text-center text-stone-400">Loading product…</p>
+        <ProductDetailSkeleton />
       </PublicLayout>
     );
   }
