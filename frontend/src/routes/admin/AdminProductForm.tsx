@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   createProduct,
@@ -10,6 +10,7 @@ import ImageUploader from "../../components/admin/ImageUploader";
 import MultiImageUploader from "../../components/admin/MultiImageUploader";
 import VideoUploader from "../../components/admin/VideoUploader";
 import { useAuth } from "../../context/AuthContext";
+import { markVideoJobSubmitted } from "../../lib/videoUploadManager";
 import type { ProductInput } from "../../types";
 
 const EMPTY_FORM: ProductInput = {
@@ -35,6 +36,9 @@ export default function AdminProductForm() {
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Not state — this only needs to be read once, inside handleSubmit, and
+  // shouldn't trigger a re-render when it changes.
+  const activeVideoJobTokenRef = useRef<string | null>(null);
 
   useEffect(() => {
     getCategories()
@@ -88,10 +92,19 @@ export default function AdminProductForm() {
     setSaving(true);
     setError(null);
     try {
+      let savedId: string | number;
       if (isEditing && id) {
         await updateProduct(id, form, token);
+        savedId = id;
       } else {
-        await createProduct(form, token);
+        const created = await createProduct(form, token);
+        savedId = created.id;
+      }
+      // If a video is still compressing/uploading in the background, hand
+      // it the id it should attach itself to once it's ready — we're not
+      // waiting for it before navigating away.
+      if (activeVideoJobTokenRef.current) {
+        markVideoJobSubmitted(activeVideoJobTokenRef.current, savedId);
       }
       navigate("/admin");
     } catch {
@@ -195,9 +208,13 @@ export default function AdminProductForm() {
         />
 
         <VideoUploader
+          productId={isEditing && id ? id : null}
           videoUrl={form.video_url}
           onUploaded={(url) => updateField("video_url", url)}
           onRemove={() => updateField("video_url", null)}
+          onJobTokenChange={(t) => {
+            activeVideoJobTokenRef.current = t;
+          }}
         />
 
         <label className="flex items-center gap-2 text-sm font-medium text-stone-700">

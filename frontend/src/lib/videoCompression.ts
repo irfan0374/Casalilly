@@ -89,8 +89,12 @@ export async function compressVideo(
       );
 
       // A failed/garbled encode can come back tiny or empty — better to
-      // upload the original than a broken file.
-      if (compressed.size === 0) return file;
+      // upload the original than a broken file. Also skip the compressed
+      // version if it didn't meaningfully shrink the file (an already
+      // well-compressed source re-encoded at the same settings can come
+      // back close to its original size) — not worth the extra generation
+      // loss for little to no size benefit.
+      if (compressed.size === 0 || compressed.size > file.size * 0.9) return file;
       return compressed;
     } finally {
       ffmpeg.off("progress", onFFmpegProgress);

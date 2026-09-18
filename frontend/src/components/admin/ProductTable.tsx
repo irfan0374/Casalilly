@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { Eye, EyeOff, Pencil, Star, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Pencil, Star, Trash2 } from "lucide-react";
 import type { Product } from "../../types";
+import { useVideoJobForProduct } from "../../lib/videoUploadManager";
 
 interface ProductTableProps {
   products: Product[];
@@ -28,88 +29,141 @@ export default function ProductTable({
             <th className="px-4 py-3 font-medium">Price</th>
             <th className="px-4 py-3 font-medium">Active</th>
             <th className="px-4 py-3 font-medium">Best Seller</th>
+            <th className="px-4 py-3 font-medium">Video</th>
             <th className="px-4 py-3 font-medium text-right">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-rose-50 bg-white">
           {products.map((product) => (
-            <tr key={product.id}>
-              <td className="px-4 py-3">
-                <div className="h-12 w-12 overflow-hidden rounded-lg bg-rose-50">
-                  {product.image_url && (
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="h-full w-full object-cover"
-                    />
-                  )}
-                </div>
-              </td>
-              <td className="px-4 py-3 font-medium text-stone-800">
-                {product.name}
-              </td>
-              <td className="px-4 py-3 text-stone-500">{product.category}</td>
-              <td className="px-4 py-3 text-stone-500">AED {product.price}</td>
-              <td className="px-4 py-3">
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                    product.is_active
-                      ? "bg-green-100 text-green-700"
-                      : "bg-stone-100 text-stone-500"
-                  }`}
-                >
-                  {product.is_active ? "Active" : "Inactive"}
-                </span>
-              </td>
-              <td className="px-4 py-3">
-                {product.is_featured && (
-                  <Star
-                    className="h-4 w-4 text-amber-500"
-                    fill="currentColor"
-                    aria-label="Best Seller"
-                  />
-                )}
-              </td>
-              <td className="px-4 py-3 text-right">
-                <div className="flex justify-end gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => onToggleActive(product)}
-                    disabled={togglingId === product.id}
-                    aria-label={product.is_active ? "Disable product" : "Activate product"}
-                    title={product.is_active ? "Disable" : "Activate"}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 disabled:opacity-50"
-                  >
-                    {product.is_active ? (
-                      <Eye className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-                    ) : (
-                      <EyeOff className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-                    )}
-                  </button>
-                  <Link
-                    to={`/admin/products/${product.id}/edit`}
-                    aria-label="Edit product"
-                    title="Edit"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50"
-                  >
-                    <Pencil className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => onDelete(product.id)}
-                    disabled={deletingId === product.id}
-                    aria-label="Delete product"
-                    title="Delete"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-50 disabled:opacity-50"
-                  >
-                    <Trash2 className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-                  </button>
-                </div>
-              </td>
-            </tr>
+            <ProductRow
+              key={product.id}
+              product={product}
+              onDelete={onDelete}
+              deletingId={deletingId}
+              onToggleActive={onToggleActive}
+              togglingId={togglingId}
+            />
           ))}
         </tbody>
       </table>
     </div>
+  );
+}
+
+interface ProductRowProps {
+  product: Product;
+  onDelete: (id: Product["id"]) => void;
+  deletingId: Product["id"] | null;
+  onToggleActive: (product: Product) => void;
+  togglingId: Product["id"] | null;
+}
+
+function ProductRow({
+  product,
+  onDelete,
+  deletingId,
+  onToggleActive,
+  togglingId,
+}: ProductRowProps) {
+  const videoJob = useVideoJobForProduct(product.id);
+
+  return (
+    <tr>
+      <td className="px-4 py-3">
+        <div className="h-12 w-12 overflow-hidden rounded-lg bg-rose-50">
+          {product.image_url && (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="h-full w-full object-cover"
+            />
+          )}
+        </div>
+      </td>
+      <td className="px-4 py-3 font-medium text-stone-800">{product.name}</td>
+      <td className="px-4 py-3 text-stone-500">{product.category}</td>
+      <td className="px-4 py-3 text-stone-500">AED {product.price}</td>
+      <td className="px-4 py-3">
+        <span
+          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+            product.is_active
+              ? "bg-green-100 text-green-700"
+              : "bg-stone-100 text-stone-500"
+          }`}
+        >
+          {product.is_active ? "Active" : "Inactive"}
+        </span>
+      </td>
+      <td className="px-4 py-3">
+        {product.is_featured && (
+          <Star
+            className="h-4 w-4 text-amber-500"
+            fill="currentColor"
+            aria-label="Best Seller"
+          />
+        )}
+      </td>
+      <td className="px-4 py-3">
+        {videoJob && (
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+              videoJob.status === "done"
+                ? "bg-green-100 text-green-700"
+                : videoJob.status === "error"
+                  ? "bg-red-100 text-red-600"
+                  : "bg-amber-100 text-amber-700"
+            }`}
+          >
+            {videoJob.status === "done" ? (
+              "Video ✓ Completed"
+            ) : videoJob.status === "error" ? (
+              "Video upload failed"
+            ) : (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                Video {videoJob.status === "compressing" ? "compressing" : "uploading"}{" "}
+                {videoJob.progress}%
+              </>
+            )}
+          </span>
+        )}
+      </td>
+      <td className="px-4 py-3 text-right">
+        <div className="flex justify-end gap-1.5">
+          <button
+            type="button"
+            onClick={() => onToggleActive(product)}
+            disabled={togglingId === product.id}
+            aria-label={product.is_active ? "Disable product" : "Activate product"}
+            title={product.is_active ? "Disable" : "Activate"}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 disabled:opacity-50"
+          >
+            {product.is_active ? (
+              <Eye className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+            ) : (
+              <EyeOff className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+            )}
+          </button>
+          <Link
+            to={`/admin/products/${product.id}/edit`}
+            aria-label="Edit product"
+            title="Edit"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50"
+          >
+            <Pencil className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+          </Link>
+          <button
+            type="button"
+            onClick={() => onDelete(product.id)}
+            disabled={deletingId === product.id}
+            aria-label="Delete product"
+            title="Delete"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-50 disabled:opacity-50"
+          >
+            <Trash2 className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+          </button>
+        </div>
+      </td>
+    </tr>
   );
 }

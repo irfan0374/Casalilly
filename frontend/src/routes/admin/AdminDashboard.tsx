@@ -142,7 +142,7 @@ export default function AdminDashboard() {
         </select>
       </div>
 
-      {loading && <AdminTableSkeleton columns={7} rows={8} />}
+      {loading && <AdminTableSkeleton columns={8} rows={8} />}
       {!loading && error && (
         <p className="py-16 text-center text-red-500">{error}</p>
       )}

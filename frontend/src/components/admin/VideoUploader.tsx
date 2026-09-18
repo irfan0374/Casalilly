@@ -1,34 +1,40 @@
 import { useState } from "react";
 import { Loader2, Play } from "lucide-react";
-import { getVideoUploadSignature, uploadVideoDirect } from "../../api/products";
 import { useAuth } from "../../context/AuthContext";
-import { compressVideo, shouldCompress } from "../../lib/videoCompression";
+import { startVideoJob, useVideoJob } from "../../lib/videoUploadManager";
 
 interface VideoUploaderProps {
+  /** Known upfront when editing an existing product; null when creating a
+   * new one that doesn't have an id yet. */
+  productId: string | number | null;
   videoUrl: string | null;
   onUploaded: (url: string, publicId: string) => void;
   onRemove: () => void;
+  /** Lets the parent form know which background job (if any) is currently
+   * in flight, so it can hand the job the product id once Save creates or
+   * updates the product — even if that happens before the upload finishes. */
+  onJobTokenChange: (token: string | null) => void;
 }
 
-type Phase = "compressing" | "uploading" | null;
-
 export default function VideoUploader({
+  productId,
   videoUrl,
   onUploaded,
   onRemove,
+  onJobTokenChange,
 }: VideoUploaderProps) {
   const { token } = useAuth();
   // Local preview, shown immediately on file pick (ahead of the upload
   // finishing) so the tile doesn't sit in its empty dashed state for the
   // whole upload — mirrors ImageUploader's local-preview-first pattern.
   const [preview, setPreview] = useState<string | null>(null);
-  const [phase, setPhase] = useState<Phase>(null);
-  const [progress, setProgress] = useState(0);
+  const [jobToken, setJobToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const job = useVideoJob(jobToken);
 
-  const uploading = phase !== null;
+  const uploading = job !== undefined && job.status !== "done" && job.status !== "error";
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !token) return;
@@ -36,25 +42,24 @@ export default function VideoUploader({
     setPreview(URL.createObjectURL(file));
     setError(null);
 
-    let toUpload = file;
-    if (shouldCompress(file)) {
-      setPhase("compressing");
-      setProgress(0);
-      toUpload = await compressVideo(file, setProgress);
-    }
-
-    setPhase("uploading");
-    setProgress(0);
-    try {
-      const sig = await getVideoUploadSignature(token);
-      const { url, public_id } = await uploadVideoDirect(toUpload, sig, setProgress);
-      onUploaded(url, public_id);
-    } catch {
-      setError("Upload failed. Please try again.");
-      setPreview(null);
-    } finally {
-      setPhase(null);
-    }
+    const newToken = startVideoJob({
+      file,
+      authToken: token,
+      productId,
+      onReadyForForm: (url, publicId) => {
+        onUploaded(url, publicId);
+        setJobToken(null);
+        onJobTokenChange(null);
+      },
+      onError: () => {
+        setError("Upload failed. Please try again.");
+        setPreview(null);
+        setJobToken(null);
+        onJobTokenChange(null);
+      },
+    });
+    setJobToken(newToken);
+    onJobTokenChange(newToken);
   }
 
   const shown = preview ?? videoUrl;
@@ -94,11 +99,11 @@ export default function VideoUploader({
                 </button>
               </>
             )}
-            {uploading && (
+            {uploading && job && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-white/80">
                 <Loader2 className="h-5 w-5 animate-spin text-rose-500" aria-hidden="true" />
                 <span className="text-xs font-medium text-rose-600">
-                  {phase === "compressing" ? "Compressing" : "Uploading"} {progress}%
+                  {job.status === "compressing" ? "Compressing" : "Uploading"} {job.progress}%
                 </span>
               </div>
             )}
@@ -116,6 +121,12 @@ export default function VideoUploader({
           </label>
         )}
       </div>
+      {uploading && (
+        <p className="text-xs text-stone-400">
+          You can save now — the video will keep uploading in the background
+          and attach itself once ready (check the product list for status).
+        </p>
+      )}
       {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );
