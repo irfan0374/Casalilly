@@ -51,8 +51,8 @@ export default function VideoUploader({
         setJobToken(null);
         onJobTokenChange(null);
       },
-      onError: () => {
-        setError("Upload failed. Please try again.");
+      onError: (message) => {
+        setError(message);
         setPreview(null);
         setJobToken(null);
         onJobTokenChange(null);

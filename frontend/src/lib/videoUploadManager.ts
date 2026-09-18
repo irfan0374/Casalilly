@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useSyncExternalStore } from "react";
 import { getVideoUploadSignature, updateProduct, uploadVideoDirect } from "../api/products";
 import { compressVideo, shouldCompress } from "./videoCompression";
@@ -14,6 +15,7 @@ export interface VideoJob {
   productId: string | number | null;
   status: VideoJobStatus;
   progress: number;
+  error?: string;
 }
 
 type Listener = () => void;
@@ -67,7 +69,7 @@ interface StartJobOptions {
    * yet — lets the normal create/update payload carry the video in the
    * common case where the upload finishes before Save is clicked. */
   onReadyForForm: (url: string, publicId: string) => void;
-  onError?: () => void;
+  onError?: (message: string) => void;
 }
 
 /**
@@ -129,9 +131,22 @@ export function startVideoJob({
         onReadyForForm(url, public_id);
       }
       updateJob(jobToken, { status: "done", progress: 100 });
-    } catch {
-      updateJob(jobToken, { status: "error" });
-      onError?.();
+    } catch (err) {
+      // Without this the real cause (Cloudinary rejection, expired signed-in
+      // session, network timeout, etc.) was discarded entirely, leaving
+      // "upload failed" with no way to tell why.
+      console.error("Video upload job failed:", err);
+      let message = "Upload failed. Please try again.";
+      if (axios.isAxiosError(err)) {
+        message =
+          err.response?.status === 401
+            ? "Your session expired during upload — please log in again."
+            : err.response?.data?.detail || err.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      updateJob(jobToken, { status: "error", error: message });
+      onError?.(message);
     } finally {
       submitHandlers.delete(jobToken);
       // Keep the finished/failed state visible briefly (so a list-page

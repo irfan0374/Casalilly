@@ -121,16 +121,31 @@ export async function uploadVideoDirect(
   formData.append("signature", sig.signature);
   formData.append("folder", sig.folder);
 
-  const { data } = await axios.post(
-    `https://api.cloudinary.com/v1_1/${sig.cloud_name}/video/upload`,
-    formData,
-    {
-      onUploadProgress: (e) => {
-        if (onProgress && e.total) {
-          onProgress(Math.round((e.loaded / e.total) * 100));
-        }
-      },
-    }
-  );
-  return { url: data.secure_url, public_id: data.public_id };
+  try {
+    const { data } = await axios.post(
+      `https://api.cloudinary.com/v1_1/${sig.cloud_name}/video/upload`,
+      formData,
+      {
+        // Large videos can legitimately take minutes on a slow connection;
+        // no timeout here just means a genuinely dead connection hangs
+        // forever instead of surfacing an error, so cap it generously
+        // rather than leaving it unbounded.
+        timeout: 10 * 60 * 1000,
+        onUploadProgress: (e) => {
+          if (onProgress && e.total) {
+            onProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        },
+      }
+    );
+    return { url: data.secure_url, public_id: data.public_id };
+  } catch (err) {
+    // Cloudinary returns { error: { message } } on rejection (e.g. file too
+    // large, invalid signature) — surface that instead of a generic
+    // failure so it's actually possible to tell what went wrong.
+    const cloudinaryMessage = axios.isAxiosError(err)
+      ? err.response?.data?.error?.message
+      : undefined;
+    throw new Error(cloudinaryMessage || "Video upload to Cloudinary failed.");
+  }
 }
