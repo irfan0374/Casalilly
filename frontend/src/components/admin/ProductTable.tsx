@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Eye, EyeOff, Pencil, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Pencil, Star, Trash2 } from "lucide-react";
 import type { Product } from "../../types";
 
 interface ProductTableProps {
@@ -27,7 +27,7 @@ export default function ProductTable({
             <th className="px-4 py-3 font-medium">Category</th>
             <th className="px-4 py-3 font-medium">Price</th>
             <th className="px-4 py-3 font-medium">Active</th>
-            <th className="px-4 py-3 font-medium">Featured</th>
+            <th className="px-4 py-3 font-medium">Best Seller</th>
             <th className="px-4 py-3 font-medium text-right">Actions</th>
           </tr>
         </thead>
@@ -63,9 +63,11 @@ export default function ProductTable({
               </td>
               <td className="px-4 py-3">
                 {product.is_featured && (
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                    ★ Featured
-                  </span>
+                  <Star
+                    className="h-4 w-4 text-amber-500"
+                    fill="currentColor"
+                    aria-label="Best Seller"
+                  />
                 )}
               </td>
               <td className="px-4 py-3 text-right">

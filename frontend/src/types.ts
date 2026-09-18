@@ -15,6 +15,7 @@ export interface Product {
   category: ProductCategory | string;
   image_url: string | null;
   extra_image_urls: string[] | null;
+  video_url: string | null;
   is_active: boolean;
   is_featured: boolean;
   created_at: string;
@@ -28,6 +29,7 @@ export interface ProductInput {
   category: string;
   image_url: string | null;
   extra_image_urls: string[];
+  video_url: string | null;
   is_active: boolean;
   is_featured: boolean;
 }
@@ -71,4 +73,14 @@ export interface LoginResponse {
 export interface UploadResponse {
   url: string;
   public_id: string;
+}
+
+/** Short-lived credentials for uploading a file straight from the browser
+ * to Cloudinary, bypassing our backend as a relay. */
+export interface VideoUploadSignature {
+  signature: string;
+  timestamp: number;
+  api_key: string;
+  cloud_name: string;
+  folder: string;
 }

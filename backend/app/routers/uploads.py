@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, UploadFile
 
 from app.deps import get_current_admin
 from app.models.admin import Admin
-from app.services.cloudinary_service import upload_image
+from app.services.cloudinary_service import generate_video_upload_signature, upload_image
 
 router = APIRouter(prefix="/api/admin", tags=["uploads"])
 
@@ -14,3 +14,10 @@ def upload(
 ) -> dict[str, str]:
     url, public_id = upload_image(file)
     return {"url": url, "public_id": public_id}
+
+
+@router.get("/uploads/video/signature")
+def video_upload_signature(
+    current_admin: Admin = Depends(get_current_admin),
+) -> dict:
+    return generate_video_upload_signature()

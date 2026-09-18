@@ -8,6 +8,7 @@ import {
 } from "../../api/products";
 import ImageUploader from "../../components/admin/ImageUploader";
 import MultiImageUploader from "../../components/admin/MultiImageUploader";
+import VideoUploader from "../../components/admin/VideoUploader";
 import { useAuth } from "../../context/AuthContext";
 import type { ProductInput } from "../../types";
 
@@ -18,6 +19,7 @@ const EMPTY_FORM: ProductInput = {
   category: "",
   image_url: null,
   extra_image_urls: [],
+  video_url: null,
   is_active: true,
   is_featured: false,
 };
@@ -53,6 +55,7 @@ export default function AdminProductForm() {
           category: product.category,
           image_url: product.image_url,
           extra_image_urls: product.extra_image_urls ?? [],
+          video_url: product.video_url,
           is_active: product.is_active,
           is_featured: product.is_featured,
         });
@@ -189,6 +192,12 @@ export default function AdminProductForm() {
         <MultiImageUploader
           imageUrls={form.extra_image_urls}
           onChange={(urls) => updateField("extra_image_urls", urls)}
+        />
+
+        <VideoUploader
+          videoUrl={form.video_url}
+          onUploaded={(url) => updateField("video_url", url)}
+          onRemove={() => updateField("video_url", null)}
         />
 
         <label className="flex items-center gap-2 text-sm font-medium text-stone-700">

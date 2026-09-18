@@ -54,6 +54,7 @@ export default function ImageUploader({
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file || !token) return;
 
     // Local preview immediately, ahead of the network round trip.
@@ -74,7 +75,9 @@ export default function ImageUploader({
     }
   }
 
-  async function handleRotate(degrees: 90 | -90) {
+  async function handleRotate(e: React.MouseEvent, degrees: 90 | -90) {
+    e.preventDefault();
+    e.stopPropagation();
     if (!preview || !token || uploading || rotating) return;
     setRotating(true);
     setError(null);
@@ -110,49 +113,61 @@ export default function ImageUploader({
       <label className="text-sm font-medium text-stone-700">
         Image <span className="text-red-500">*</span>
       </label>
-      {preview && (
-        <div className="flex items-start gap-3">
-          <div className="relative h-40 w-40 overflow-hidden rounded-xl border border-rose-100 bg-rose-50">
-            <img
-              src={preview}
-              alt="Preview"
-              className="h-full w-full object-cover"
-            />
-            {busy && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/70">
-                <Loader2 className="h-6 w-6 animate-spin text-rose-500" aria-hidden="true" />
-              </div>
-            )}
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <button
-              type="button"
-              onClick={() => handleRotate(-90)}
-              disabled={busy}
-              className="flex items-center gap-1.5 rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 transition hover:bg-stone-50 disabled:opacity-50"
-            >
-              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-              Rotate left
-            </button>
-            <button
-              type="button"
-              onClick={() => handleRotate(90)}
-              disabled={busy}
-              className="flex items-center gap-1.5 rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 transition hover:bg-stone-50 disabled:opacity-50"
-            >
-              <RotateCw className="h-3.5 w-3.5" aria-hidden="true" />
-              Rotate right
-            </button>
-          </div>
-        </div>
+
+      {preview ? (
+        <label className="relative h-40 w-40 cursor-pointer overflow-hidden rounded-xl border border-rose-100 bg-rose-50">
+          <img
+            src={preview}
+            alt="Preview"
+            className="h-full w-full object-cover"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            disabled={busy}
+            className="hidden"
+          />
+
+          <button
+            type="button"
+            onClick={(e) => handleRotate(e, -90)}
+            disabled={busy}
+            aria-label="Rotate left"
+            className="absolute bottom-1 left-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 disabled:opacity-50"
+          >
+            <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => handleRotate(e, 90)}
+            disabled={busy}
+            aria-label="Rotate right"
+            className="absolute bottom-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 disabled:opacity-50"
+          >
+            <RotateCw className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+
+          {busy && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+              <Loader2 className="h-6 w-6 animate-spin text-rose-500" aria-hidden="true" />
+            </div>
+          )}
+        </label>
+      ) : (
+        <label className="flex h-40 w-40 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-rose-200 text-rose-400 transition hover:border-rose-400 hover:text-rose-500">
+          <span className="text-2xl leading-none">+</span>
+          <span className="text-xs">Add Image</span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            disabled={busy}
+            className="hidden"
+          />
+        </label>
       )}
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        disabled={busy}
-        className="text-sm text-stone-600 file:mr-3 file:rounded-full file:border-0 file:bg-rose-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-rose-700 hover:file:bg-rose-200"
-      />
+
       {rotating && <p className="text-sm text-stone-400">Rotating…</p>}
       {uploading && !rotating && <p className="text-sm text-stone-400">Uploading…</p>}
       {error && <p className="text-sm text-red-500">{error}</p>}

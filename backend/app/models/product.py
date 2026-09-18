@@ -18,6 +18,8 @@ class Product(Base):
     # Up to 3 additional gallery images (image_url is the required 1st/cover image, for 4 total).
     extra_image_urls = Column(ARRAY(Text), nullable=True)
     extra_image_public_ids = Column(ARRAY(String(255)), nullable=True)
+    video_url = Column(Text, nullable=True)
+    video_public_id = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     is_featured = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

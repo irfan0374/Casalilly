@@ -34,7 +34,13 @@ export default function Home() {
     const sentinel = categoriesSentinelRef.current;
     if (!sentinel) return;
     const observer = new IntersectionObserver(
-      ([entry]) => setCategoriesStuck(!entry.isIntersecting),
+      ([entry]) => {
+        // "Not intersecting" is also the sentinel's state before the page
+        // has scrolled anywhere near it (it starts below the fold) — only
+        // treat it as stuck once it has actually scrolled above the
+        // viewport, i.e. we've scrolled past the categories section.
+        setCategoriesStuck(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+      },
       { threshold: 0 }
     );
     observer.observe(sentinel);
