@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Star, Trash2 } from "lucide-react";
 import {
   adminGetProduct,
@@ -8,6 +8,7 @@ import {
   getCategories,
   updateProduct,
 } from "../../api/products";
+import { adminListOccasions, occasionError } from "../../api/occasions";
 import ImageUploader from "../../components/admin/ImageUploader";
 import MultiImageUploader from "../../components/admin/MultiImageUploader";
 import { ProductPreview } from "../../components/admin/ProductTable";
@@ -22,7 +23,7 @@ import { ToggleRow } from "../../components/admin/ui/Toggle";
 import { useAuth } from "../../context/AuthContext";
 import { formatCategory } from "../../lib/categories";
 import { markVideoJobSubmitted } from "../../lib/videoUploadManager";
-import type { ProductInput } from "../../types";
+import type { Occasion, ProductInput } from "../../types";
 
 const NAME_MAX = 255;
 
@@ -31,6 +32,7 @@ const EMPTY_FORM: ProductInput = {
   description: "",
   price: 0,
   categories: [],
+  occasion_ids: [],
   image_url: null,
   image_public_id: null,
   extra_image_urls: [],
@@ -65,6 +67,19 @@ export default function AdminProductForm() {
   // Kept as typed text so "12." or an empty field don't snap to 0 mid-typing.
   const [priceText, setPriceText] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
+  const [occasions, setOccasions] = useState<Occasion[]>([]);
+  const [occasionsLoading, setOccasionsLoading] = useState(true);
+  const [occasionsError, setOccasionsError] = useState<string | null>(null);
+  const [occasionReload, setOccasionReload] = useState(0);
+
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    adminListOccasions(token).then(items => { if (!cancelled) setOccasions(items); })
+      .catch(() => { if (!cancelled) setOccasionsError("Could not load occasions."); })
+      .finally(() => { if (!cancelled) setOccasionsLoading(false); });
+    return () => { cancelled = true; };
+  }, [token, occasionReload]);
   const [loading, setLoading] = useState(isEditing);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -94,6 +109,7 @@ export default function AdminProductForm() {
           description: product.description ?? "",
           price: Number(product.price),
           categories: product.categories?.length ? product.categories : [product.category],
+          occasion_ids: product.occasion_ids ?? [],
           image_url: product.image_url,
           image_public_id: product.image_public_id,
           extra_image_urls: extraUrls,
@@ -174,8 +190,8 @@ export default function AdminProductForm() {
       }
       toast(isEditing ? "Changes saved" : "Product added");
       navigate("/admin/products");
-    } catch {
-      toast("Couldn't save the product. Please try again.", "error");
+    } catch (err) {
+      toast(occasionError(err, "Couldn't save the product. Please try again."), "error");
     } finally {
       setSaving(false);
     }
@@ -346,6 +362,22 @@ export default function AdminProductForm() {
                 </div>
               </Field>
             </div>
+          </Card>
+
+          <Card title="Occasions" subtitle="Choose all the occasions this product suits.">
+            {occasionsLoading ? <p className="text-sm text-stone-500">Loading occasions…</p> : occasionsError ? (
+              <div role="alert"><p className="text-sm text-red-600">{occasionsError}</p><Button variant="ghost" onClick={() => { setOccasionsLoading(true); setOccasionsError(null); setOccasionReload(n => n + 1); }}>Try again</Button></div>
+            ) : (
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Product occasions">
+                {occasions.map(occasion => (
+                  <Chip key={occasion.id} checkable selected={form.occasion_ids.includes(occasion.id)} onClick={() => setForm(prev => ({ ...prev, occasion_ids: prev.occasion_ids.includes(occasion.id) ? prev.occasion_ids.filter(value => value !== occasion.id) : [...prev.occasion_ids, occasion.id] }))}>
+                    {occasion.name}{!occasion.is_active && " (hidden)"}
+                  </Chip>
+                ))}
+                {occasions.length === 0 && <p className="text-sm text-stone-500">No occasions yet.</p>}
+              </div>
+            )}
+            <Link to="/admin/occasions" className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-rose-700">Manage occasions</Link>
           </Card>
 
           <Card title="Visibility">

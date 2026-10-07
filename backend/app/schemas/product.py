@@ -41,6 +41,7 @@ class ProductBase(BaseModel):
     video_public_id: Optional[str] = None
     is_active: bool = True
     is_featured: bool = False
+    occasion_ids: List[int] = Field(default_factory=list, max_length=100)
 
 
 class ProductCreate(ProductBase):
@@ -73,6 +74,7 @@ class ProductUpdate(BaseModel):
     video_public_id: Optional[str] = None
     is_active: Optional[bool] = None
     is_featured: Optional[bool] = None
+    occasion_ids: Optional[List[int]] = Field(default=None, max_length=100)
 
     @model_validator(mode="after")
     def _sync_categories(self) -> "ProductUpdate":

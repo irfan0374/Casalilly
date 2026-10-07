@@ -262,7 +262,7 @@ export default function HeroSlideForm() {
   );
 }
 
-/** Mirrors how the storefront's HeroSlideshow lays out a slide. */
+/** Mirrors how the storefront's HeroSlideshow lays out a slide on a phone. */
 function BannerPreview({
   imageUrl,
   heading,
@@ -273,14 +273,21 @@ function BannerPreview({
   subheading: string;
 }) {
   return (
-    <div className="relative aspect-[3/2] overflow-hidden rounded-2xl bg-stone-200">
+    <div className="relative mx-auto aspect-[4/5] max-w-xs overflow-hidden rounded-3xl bg-stone-200">
       {imageUrl && <img src={imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
-      <div className="absolute inset-0 flex flex-col items-start justify-center gap-2 px-5">
-        <p className="font-serif text-xl font-bold leading-tight text-white drop-shadow">
-          {heading || "Your heading appears here"}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-2 p-5 pb-6">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-white/75">Casa Lilly · Dubai</p>
+        <p className="font-serif text-2xl font-medium leading-tight text-white">
+          {heading || "Fresh flowers & gifts, delivered with love"}
         </p>
-        {subheading && <p className="line-clamp-2 text-sm text-white/90 drop-shadow">{subheading}</p>}
+        <p className="line-clamp-2 text-xs text-white/85">
+          {subheading || "Handpicked bouquets, plants & gift baskets for every occasion"}
+        </p>
+        <div className="mt-1 flex gap-2">
+          <span className="rounded-full bg-rose-600 px-3 py-1.5 text-[11px] font-semibold text-white">Shop now</span>
+          <span className="rounded-full bg-white px-3 py-1.5 text-[11px] font-semibold text-stone-900">Order on WhatsApp</span>
+        </div>
       </div>
     </div>
   );

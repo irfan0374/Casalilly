@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   BookOpen,
+  CalendarHeart,
   Ellipsis,
   ExternalLink,
   Flower2,
@@ -24,6 +25,7 @@ const SIDEBAR_ITEMS: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutGrid, end: true },
   { to: "/admin/products", label: "Products", icon: Flower2 },
   { to: "/admin/hero-slides", label: "Banners", icon: GalleryHorizontal },
+  { to: "/admin/occasions", label: "Occasions", icon: CalendarHeart },
   { to: "/admin/about", label: "About Page", icon: BookOpen },
 ];
 

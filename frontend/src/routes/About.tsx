@@ -11,9 +11,8 @@ import type { SiteSettings } from "../types";
 import teamBigImage from "../assets/about/team-1.png";
 import teamSmall1Image from "../assets/about/team-2.jpeg";
 import teamSmall2Image from "../assets/about/team-3.jpeg";
-import { DEFAULT_ABOUT_BODY, DEFAULT_ABOUT_HEADING, SHOP_PHONE } from "../lib/config";
+import { DEFAULT_ABOUT_BODY, DEFAULT_ABOUT_HEADING, INSTAGRAM_HANDLE, SHOP_PHONE } from "../lib/config";
 
-const INSTAGRAM_HANDLE = "casalily26";
 
 
 const STORY_TILES = [

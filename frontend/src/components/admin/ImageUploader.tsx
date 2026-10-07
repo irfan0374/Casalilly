@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Camera, Loader2, RefreshCw, RotateCcw, RotateCw } from "lucide-react";
 import { uploadImage } from "../../api/products";
 import { useAuth } from "../../context/AuthContext";
@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 interface ImageUploaderProps {
   imageUrl: string | null;
   onUploaded: (url: string, publicId: string) => void;
+  onBusyChange?: (busy: boolean) => void;
   /** "portrait" (4:5) for product cover photos, "wide" (16:9) for banners. */
   aspect?: "portrait" | "wide";
   emptyLabel?: string;
@@ -45,6 +46,7 @@ async function rotateImageBlob(source: Blob, degrees: number): Promise<Blob> {
 export default function ImageUploader({
   imageUrl,
   onUploaded,
+  onBusyChange,
   aspect = "portrait",
   emptyLabel = "Tap to add a photo",
   emptyHint,
@@ -112,6 +114,7 @@ export default function ImageUploader({
   }
 
   const busy = uploading || rotating;
+  useEffect(() => { onBusyChange?.(busy); }, [busy, onBusyChange]);
   const ratio = aspect === "wide" ? "aspect-video" : "aspect-[4/5]";
   // The empty drop zone doesn't need the full portrait height — on a phone
   // that would fill the whole screen before any photo is picked.

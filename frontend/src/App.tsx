@@ -15,6 +15,8 @@ import AdminMore from "./routes/admin/AdminMore";
 import AdminProductForm from "./routes/admin/AdminProductForm";
 import HeroSlideList from "./routes/admin/HeroSlideList";
 import HeroSlideForm from "./routes/admin/HeroSlideForm";
+import OccasionList from "./routes/admin/OccasionList";
+import OccasionForm from "./routes/admin/OccasionForm";
 import AboutSettingsForm from "./routes/admin/AboutSettingsForm";
 
 export default function App() {
@@ -52,6 +54,9 @@ export default function App() {
                   path="/admin/hero-slides/:id/edit"
                   element={<HeroSlideForm />}
                 />
+                <Route path="/admin/occasions" element={<OccasionList />} />
+                <Route path="/admin/occasions/new" element={<OccasionForm />} />
+                <Route path="/admin/occasions/:id/edit" element={<OccasionForm />} />
                 <Route path="/admin/about" element={<AboutSettingsForm />} />
               </Route>
 

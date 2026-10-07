@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { getProducts } from "../api/products";
-import BestSellerCarousel from "./BestSellerCarousel";
-import ProductCardSkeleton from "./ProductCardSkeleton";
-import { formatCategory } from "../lib/categories";
+import ShopProductCard from "./storefront/ShopProductCard";
+import { HomeSection, SectionHeader, ViewAllLink } from "./storefront/HomeSections";
+import { CategoryTabs, ProductCardSkeletonRow } from "./storefront/CategoryTabs";
 import type { Product } from "../types";
 
 const BEST_SELLERS_COUNT = 4;
@@ -66,50 +66,30 @@ export default function BestSellersSection({
   if (categories.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-6xl pt-16 pb-6">
-      <div className="mb-6 flex items-center justify-between px-4">
-        <h2 className="font-serif text-2xl font-bold text-stone-800 sm:text-3xl">
-          Best Sellers
-        </h2>
-      
-      </div>
+    <HomeSection>
+      <SectionHeader
+        title="Best sellers"
+        action={<ViewAllLink to={`/shop?category=${active ?? ""}`} />}
+      />
+      <CategoryTabs categories={categories} active={active} onSelect={setActive} />
 
-      <div className="scrollbar-none mb-8 flex justify-start gap-6 overflow-x-auto px-4 pb-1 sm:justify-center sm:overflow-visible">
-        {categories.map((category) => (
-          <button
-            key={category}
-            type="button"
-            onClick={() => setActive(category)}
-            className={`flex-shrink-0 whitespace-nowrap border-b-2 pb-2 text-xs font-semibold uppercase tracking-wide transition sm:text-sm ${
-              active === category
-                ? "border-rose-600 text-stone-800"
-                : "border-transparent text-stone-400 hover:text-stone-600"
-            }`}
-          >
-            {formatCategory(category)}
-          </button>
-        ))}
-      </div>
+      {loading && <ProductCardSkeletonRow />}
 
-      {loading && (
-        <div className="flex gap-2 overflow-hidden px-[calc(50%-19vw)] py-6 sm:gap-3 sm:px-[calc(50%-115px)] lg:gap-4 lg:px-[calc(50%-130px)]">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="w-[38vw] flex-shrink-0 sm:w-[230px] lg:w-[260px]">
-              <ProductCardSkeleton />
+      {!loading && products.length === 0 && (
+        <p className="py-12 text-center text-stone-400">No products in this category yet.</p>
+      )}
+
+      {!loading && products.length > 0 && (
+        // A swipe row: ~2.2 cards in view on phones so it's obvious it
+        // scrolls, all four side by side on desktop.
+        <div className="scrollbar-none -mx-4 mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-4 md:gap-5 md:overflow-visible md:px-0">
+          {products.map((product) => (
+            <div key={product.id} className="w-[46%] flex-shrink-0 snap-start md:w-auto">
+              <ShopProductCard product={product} />
             </div>
           ))}
         </div>
       )}
-
-      {!loading && products.length === 0 && (
-        <p className="py-12 text-center text-stone-400">
-          No products in this category yet.
-        </p>
-      )}
-
-      {!loading && products.length > 0 && (
-        <BestSellerCarousel key={active} products={products} />
-      )}
-    </section>
+    </HomeSection>
   );
 }

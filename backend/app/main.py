@@ -5,6 +5,7 @@ from app.config import settings as app_settings
 from app.routers import (
     auth,
     hero_slides,
+    occasions,
     products,
     settings,
     social_preview,
@@ -41,6 +42,8 @@ app.include_router(settings.public_router)
 app.include_router(settings.admin_router)
 app.include_router(hero_slides.public_router)
 app.include_router(hero_slides.admin_router)
+app.include_router(occasions.public_router)
+app.include_router(occasions.admin_router)
 app.include_router(social_preview.router)
 
 

@@ -127,7 +127,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <h3 className="line-clamp-1 text-sm font-semibold text-stone-800 sm:text-lg">
           {product.name}
         </h3>
-        <p className="line-clamp-2 hidden flex-1 text-sm text-stone-500 sm:block">
+        <p className="line-clamp-1 flex-1 text-sm text-stone-500">
           {product.description}
         </p>
         <div className="mt-auto flex items-center justify-between gap-2 pt-1.5 sm:flex-col sm:items-stretch sm:gap-2 sm:pt-3">

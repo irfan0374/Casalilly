@@ -13,7 +13,8 @@ export async function getProducts(
   featured?: boolean,
   search?: string,
   skip?: number,
-  limit?: number
+  limit?: number,
+  occasion?: number
 ): Promise<Product[]> {
   const params: Record<string, string | boolean | number> = {};
   if (category) params.category = category;
@@ -21,6 +22,7 @@ export async function getProducts(
   if (search) params.search = search;
   if (skip !== undefined) params.skip = skip;
   if (limit !== undefined) params.limit = limit;
+  if (occasion !== undefined) params.occasion = occasion;
   const { data } = await apiClient.get<Product[]>("/products", { params });
   return data;
 }

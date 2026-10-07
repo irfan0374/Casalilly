@@ -1,6 +1,8 @@
 from sqlalchemy import Boolean, Column, DateTime, Integer, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
+from app.models.occasion import product_occasions
 
 from app.database import Base
 
@@ -9,6 +11,12 @@ class Product(Base):
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True, index=True)
+    occasions = relationship("Occasion", secondary=product_occasions, lazy="selectin")
+
+    @property
+    def occasion_ids(self):
+        return sorted(occasion.id for occasion in self.occasions)
+
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     price = Column(Numeric(10, 2), nullable=False)

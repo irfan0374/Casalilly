@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { BookOpen, ChevronRight, ExternalLink, LogOut, type LucideIcon } from "lucide-react";
+import { CalendarHeart, BookOpen, ChevronRight, ExternalLink, LogOut, type LucideIcon } from "lucide-react";
 import { PageHeader } from "../../components/admin/ui/Layout";
 import { useAuth } from "../../context/AuthContext";
 
@@ -11,6 +11,7 @@ export default function AdminMore() {
     <div>
       <PageHeader title="More" />
       <div className="divide-y divide-stone-100 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-stone-100">
+        <Row to="/admin/occasions" icon={CalendarHeart} title="Occasions" subtitle="Edit homepage cards and their photos" />
         <Row to="/admin/about" icon={BookOpen} title="About Page" subtitle="Edit your website's story" />
         <Row
           href="/"

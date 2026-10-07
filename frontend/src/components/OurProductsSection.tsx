@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { getProducts } from "../api/products";
-import OurProductsGrid, { GRID_CLASS } from "./OurProductsGrid";
-import ProductCardSkeleton from "./ProductCardSkeleton";
-import { formatCategory } from "../lib/categories";
+import ShopProductCard from "./storefront/ShopProductCard";
+import { HomeSection, SectionHeader, ViewAllLink } from "./storefront/HomeSections";
+import { CategoryTabs, ProductCardSkeletonRow } from "./storefront/CategoryTabs";
 import type { Product } from "../types";
 
 // Only these categories get a tab here, in this fixed order — the rest of
@@ -12,12 +11,14 @@ import type { Product } from "../types";
 const VISIBLE_CATEGORIES = ["flowers", "plants", "chocolate"];
 
 // Capped so the homepage preview stays a taste of the category, not the
-// whole catalog — "View All" leads to the full, uncapped list on Shop.
-const PREVIEW_COUNT = 10;
+// whole catalog — "View all" leads to the full, uncapped list on Shop.
+// Phones show the first 6 (3 rows of 2), desktop all 8 (2 rows of 4).
+const PREVIEW_COUNT = 8;
+const MOBILE_PREVIEW_COUNT = 6;
 
 // Label override just for this tab row — "plants" reads as "Indoor Plants"
 // here without changing the shared label used on the Shop/Categories pages.
-const TAB_LABELS: Record<string, string> = { plants: "Indoor Plants" };
+const TAB_LABELS: Record<string, string> = { plants: "Indoor plants" };
 
 export default function OurProductsSection({
   categories,
@@ -63,55 +64,33 @@ export default function OurProductsSection({
   if (orderedCategories.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-6xl px-4 pt-6  pb-8 ">
-      <div className="flex items-center justify-between">
-        <h2 className="font-serif text-2xl font-bold text-stone-800 sm:text-3xl">
-          Our Products
-        </h2>
-        <Link
-          to={`/shop?category=${active ?? ""}`}
-          className="text-sm font-semibold text-rose-600 hover:underline"
-        >
-          View All →
-        </Link>
-      </div>
+    <HomeSection>
+      <SectionHeader
+        title="Our products"
+        action={<ViewAllLink to={`/shop?category=${active ?? ""}`} />}
+      />
+      <CategoryTabs
+        categories={orderedCategories}
+        active={active}
+        onSelect={setActive}
+        labels={TAB_LABELS}
+      />
 
-      <div className="scrollbar-none mt-6 flex justify-start gap-6 overflow-x-auto pb-1 sm:mt-8 sm:justify-start sm:overflow-visible sm:pb-0">
-        {orderedCategories.map((category) => (
-          <button
-            key={category}
-            type="button"
-            onClick={() => setActive(category)}
-            className={`flex-shrink-0 whitespace-nowrap border-b-2 pb-2 text-xs font-semibold uppercase tracking-wide transition sm:text-sm ${
-              active === category
-                ? "border-rose-600 text-stone-800"
-                : "border-transparent text-stone-400 hover:text-stone-600"
-            }`}
-          >
-            {TAB_LABELS[category] ?? formatCategory(category)}
-          </button>
-        ))}
-      </div>
-
-      {loading && (
-        <div className={`mt-8 grid ${GRID_CLASS}`}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <ProductCardSkeleton key={i} />
-          ))}
-        </div>
-      )}
+      {loading && <ProductCardSkeletonRow />}
 
       {!loading && products.length === 0 && (
-        <p className="mt-8 py-8 text-center text-stone-400">
-          No products in this category yet.
-        </p>
+        <p className="py-12 text-center text-stone-400">No products in this category yet.</p>
       )}
 
       {!loading && products.length > 0 && (
-        <div className="mt-8">
-          <OurProductsGrid products={products} />
+        <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
+          {products.map((product, i) => (
+            <div key={product.id} className={i >= MOBILE_PREVIEW_COUNT ? "hidden md:block" : ""}>
+              <ShopProductCard product={product} />
+            </div>
+          ))}
         </div>
       )}
-    </section>
+    </HomeSection>
   );
 }

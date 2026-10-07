@@ -16,6 +16,7 @@ export interface Product {
   /** The primary category — always categories[0]; used for card labels. */
   category: ProductCategory | string;
   categories: string[];
+  occasion_ids: number[];
   image_url: string | null;
   image_public_id: string | null;
   extra_image_urls: string[] | null;
@@ -34,6 +35,7 @@ export interface ProductInput {
   price: number;
   /** At least one; the first is the product's primary category. */
   categories: string[];
+  occasion_ids: number[];
   image_url: string | null;
   image_public_id: string | null;
   extra_image_urls: string[];
@@ -100,4 +102,22 @@ export interface VideoUploadSignature {
   api_key: string;
   cloud_name: string;
   folder: string;
+}
+
+export interface Occasion {
+  id: number;
+  name: string;
+  image_url: string;
+  image_public_id: string | null;
+  shop_link: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface OccasionInput {
+  name: string;
+  image_url: string;
+  image_public_id: string | null;
+  shop_link: string | null;
+  is_active: boolean;
 }

@@ -63,13 +63,13 @@ export default function HeroSearchBar({ onOpen }: { onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="flex w-full max-w-md items-center gap-2 rounded-full border border-rose-100 bg-white px-4 py-2.5 text-left shadow-sm transition hover:border-rose-200 hover:shadow-md sm:max-w-lg sm:py-3"
+      aria-label="Search products"
+      className="flex h-14 w-full items-center gap-3 rounded-full bg-white px-5 text-left ring-1 ring-stone-200 transition hover:ring-rose-300 md:mx-auto md:max-w-2xl"
     >
-      <Search className="h-4 w-4 shrink-0 text-rose-400" strokeWidth={2} aria-hidden="true" />
-      <span className="w-full min-w-0 truncate text-sm text-stone-500">
-        Search "{typedPlaceholder}
+      <Search className="h-5 w-5 shrink-0 text-stone-400" strokeWidth={1.75} aria-hidden="true" />
+      <span className="w-full min-w-0 truncate text-[15px] text-stone-400">
+        Search for {typedPlaceholder}
         <span className="ml-px inline-block w-px animate-pulse bg-stone-400">&nbsp;</span>
-        "
       </span>
     </button>
   );

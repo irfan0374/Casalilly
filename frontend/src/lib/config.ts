@@ -16,3 +16,10 @@ export const SITE_BASE_URL: string =
 export const DEFAULT_ABOUT_HEADING = "Casa Lily Flowers & Plants";
 export const DEFAULT_ABOUT_BODY =
   "Casa Lily Boutique merges premium botanicals with elite craftsmanship, delivering sophisticated floral experiences for every space.";
+
+// Boutique contact details — shown in the footer, the homepage's "Visit our
+// boutique" section and the About page.
+export const SHOP_ADDRESS = "Mubarak Al Mansoori Building, Arjan, Al Barsha 3, Dubai";
+export const SHOP_LANDLINE = "04 426 9933";
+export const SHOP_MOBILE_DISPLAY = "058 656 9933";
+export const INSTAGRAM_HANDLE = "casalily26";

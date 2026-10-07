@@ -12,51 +12,35 @@ const FEATURES: {
 }[] = [
   {
     icon: ShieldCheck,
-    title: "Healthy Plants",
+    title: "Healthy plants",
     description: "Hand-picked, healthy plants for your space.",
   },
   {
-    icon: RotateCcw,
-    title: "Easy Returns",
-    description: "Hassle-free returns & replacement.",
-  },
-  {
     icon: Leaf,
-    title: "Eco Friendly",
+    title: "Eco-friendly packaging",
     description: "Sustainable, eco-friendly packaging.",
   },
   {
+    icon: RotateCcw,
+    title: "Easy returns",
+    description: "Hassle-free returns & replacement.",
+  },
+  {
     icon: Headset,
-    title: "Expert Support",
+    title: "Expert care advice",
     description: "Get expert care advice whenever you need.",
   },
 ];
 
-function FeatureItem({
-  icon: Icon,
-  title,
-  description,
-  align,
-}: {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  align: "left" | "right";
-}) {
+function FeatureItem({ icon: Icon, title, description }: (typeof FEATURES)[number]) {
   return (
-    <div
-      className={`flex max-w-[90px] flex-col items-center gap-1.5 text-center sm:max-w-[190px] sm:flex-row sm:items-start sm:gap-3 sm:text-left ${
-        align === "right" ? "sm:flex-row-reverse sm:text-right" : ""
-      }`}
-    >
-      <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-rose-50 ring-1 ring-rose-100 sm:h-10 sm:w-10">
-        <Icon className="h-4 w-4 text-rose-500 sm:h-5 sm:w-5" strokeWidth={1.75} aria-hidden="true" />
+    <div className="flex items-start gap-3 rounded-2xl bg-white p-4 ring-1 ring-stone-100">
+      <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-rose-50">
+        <Icon className="h-5 w-5 text-rose-600" strokeWidth={1.75} aria-hidden="true" />
       </span>
       <div>
-        <p className="text-[11px] font-semibold leading-tight text-stone-800 sm:text-sm">
-          {title}
-        </p>
-        <p className="mt-0.5 hidden text-xs text-stone-500 sm:block">{description}</p>
+        <p className="text-[15px] font-semibold text-stone-900">{title}</p>
+        <p className="mt-0.5 text-sm text-stone-500">{description}</p>
       </div>
     </div>
   );
@@ -171,32 +155,38 @@ export default function RotatingPlantShowcase() {
   if (FRAME_URLS.length === 0) return null;
 
   return (
-    <section ref={sectionRef} className="mx-auto max-w-5xl px-4 pt-6">
-      <h2 className="text-center font-serif text-2xl font-bold text-stone-800 sm:text-3xl">
-        Why Choose Casalily?
-      </h2>
+    <section ref={sectionRef} className="mx-auto max-w-7xl px-4 pt-14 md:px-8 md:pt-20">
+      <div className="rounded-3xl bg-stone-100/70 px-5 py-10 md:px-12 md:py-14">
+        <p className="text-center text-[11px] font-semibold uppercase tracking-[0.25em] text-rose-700">
+          The Casa Lilly standard
+        </p>
+        <h2 className="mt-2 text-center font-serif text-[28px] font-medium leading-tight text-stone-900 md:text-4xl">
+          Why choose Casa Lilly
+        </h2>
 
-      <div className="mt-10 flex items-center justify-center gap-3 sm:gap-8 lg:gap-14">
-        <div className="flex flex-col gap-6 sm:gap-10 sm:items-end">
-          <FeatureItem align="right" {...FEATURES[0]} />
-          <FeatureItem align="right" {...FEATURES[1]} />
-        </div>
+        <div className="mt-8 grid items-center gap-3 md:mt-12 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-10">
+          <div className="order-2 min-w-0 flex flex-col gap-3 lg:order-1 md:gap-4">
+            <FeatureItem {...FEATURES[0]} />
+            <FeatureItem {...FEATURES[1]} />
+          </div>
 
-        <div className="relative h-48 w-36 flex-shrink-0 overflow-hidden rounded-3xl bg-stone-50 sm:h-80 sm:w-60 lg:h-96 lg:w-72">
-          {!ready && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-rose-200 border-t-rose-500" />
-            </div>
-          )}
-          <canvas ref={canvasRef} className="h-full w-full" />
-        </div>
+          {/* Portrait box — the turntable frames are 9:16, so a wide box
+              would crop the plant. */}
+          <div className="relative order-1 mx-auto mb-3 aspect-[3/4] w-56 lg:mb-0 overflow-hidden rounded-3xl bg-white lg:order-2 md:w-72 lg:w-80">
+            {!ready && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-rose-200 border-t-rose-500" />
+              </div>
+            )}
+            <canvas ref={canvasRef} className="h-full w-full" />
+          </div>
 
-        <div className="flex flex-col gap-6 sm:gap-10 sm:items-start">
-          <FeatureItem align="left" {...FEATURES[2]} />
-          <FeatureItem align="left" {...FEATURES[3]} />
+          <div className="order-3 min-w-0 flex flex-col gap-3 md:gap-4">
+            <FeatureItem {...FEATURES[2]} />
+            <FeatureItem {...FEATURES[3]} />
+          </div>
         </div>
       </div>
-
     </section>
   );
 }

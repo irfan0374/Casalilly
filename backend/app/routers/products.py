@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.deps import get_current_admin, get_db
 from app.models.admin import Admin
 from app.models.product import Product
+from app.models.occasion import Occasion
 from app.schemas.product import (
     CATEGORIES,
     CatalogSummary,
@@ -25,6 +26,14 @@ _MEDIA_FIELDS = [
     ("extra_image_urls", "extra_image_public_ids"),
     ("video_url", "video_public_id"),
 ]
+
+
+def _resolve_occasions(ids: List[int], db: Session) -> List[Occasion]:
+    unique_ids = set(ids)
+    occasions = db.query(Occasion).filter(Occasion.id.in_(unique_ids)).all() if unique_ids else []
+    if len(occasions) != len(unique_ids):
+        raise HTTPException(status_code=422, detail="An occasion no longer exists. Reload the occasion choices.")
+    return occasions
 
 
 def _product_assets(product: Product) -> Set[Tuple[str, str]]:
@@ -56,6 +65,7 @@ def list_products(
     category: Optional[str] = None,
     featured: Optional[bool] = None,
     search: Optional[str] = None,
+    occasion: Optional[int] = Query(None, ge=1),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
     db: Session = Depends(get_db),
@@ -63,6 +73,8 @@ def list_products(
     query = db.query(Product).filter(Product.is_active.is_(True))
     if category is not None:
         query = query.filter(Product.categories.any(category))
+    if occasion is not None:
+        query = query.filter(Product.occasions.any((Occasion.id == occasion) & Occasion.is_active.is_(True)))
     if featured is not None:
         query = query.filter(Product.is_featured.is_(featured))
     if search:
@@ -141,7 +153,9 @@ def create_product(
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin),
 ) -> Product:
-    product = Product(**payload.model_dump())
+    values = payload.model_dump()
+    occasions = _resolve_occasions(values.pop("occasion_ids"), db)
+    product = Product(**values, occasions=occasions)
     db.add(product)
     db.commit()
     db.refresh(product)
@@ -162,6 +176,11 @@ def update_product(
 
     assets_before = _product_assets(product)
     changes = payload.model_dump(exclude_unset=True)
+    if "occasion_ids" in changes:
+        ids = changes.pop("occasion_ids")
+        if ids is None:
+            raise HTTPException(status_code=422, detail="Occasions must be a list")
+        product.occasions = _resolve_occasions(ids, db)
     # A new URL sent without its public id must not keep the old file's id
     # — that would point the id at the wrong asset and leak the new one.
     for url_field, id_field in _MEDIA_FIELDS:

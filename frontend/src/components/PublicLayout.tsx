@@ -5,7 +5,7 @@ import Footer from "./Footer";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col pb-24 sm:pb-0">
+    <div className="flex min-h-screen flex-col bg-[#fcfbfa] pb-28 md:pb-0">
       <Navbar />
       <div className="flex-1">{children}</div>
       <Footer />

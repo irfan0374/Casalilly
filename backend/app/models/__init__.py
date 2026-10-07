@@ -1,6 +1,7 @@
 from app.models.admin import Admin
+from app.models.occasion import Occasion
 from app.models.hero_slide import HeroSlide
 from app.models.product import Product
 from app.models.site_settings import SiteSettings
 
-__all__ = ["Product", "Admin", "SiteSettings", "HeroSlide"]
+__all__ = ["Product", "Admin", "SiteSettings", "HeroSlide", "Occasion"]

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { getOccasions } from "../api/occasions";
 import { getCategories, getProducts } from "../api/products";
 import ProductCard from "../components/ProductCard";
 import ProductCardSkeleton from "../components/ProductCardSkeleton";
 import CategoryFilter from "../components/CategoryFilter";
 import PublicLayout from "../components/PublicLayout";
-import type { Product } from "../types";
+import type { Occasion, Product } from "../types";
 
 const PAGE_SIZE = 12;
 
@@ -13,6 +14,11 @@ export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedCategory = searchParams.get("category");
   const searchQuery = searchParams.get("search");
+  const selectedOccasion = searchParams.get("occasion");
+  const occasionId = selectedOccasion === null ? undefined : Number(selectedOccasion);
+  const [occasions, setOccasions] = useState<Occasion[]>([]);
+  useEffect(() => { getOccasions().then(setOccasions).catch(() => setOccasions([])); }, []);
+  const occasionName = occasions.find(item => item.id === occasionId)?.name;
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -55,7 +61,8 @@ export default function Shop() {
       undefined,
       searchQuery ?? undefined,
       0,
-      PAGE_SIZE
+      PAGE_SIZE,
+      occasionId
     )
       .then((data) => {
         if (genRef.current !== gen) return;
@@ -72,7 +79,7 @@ export default function Shop() {
       .finally(() => {
         if (genRef.current === gen) setLoading(false);
       });
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, occasionId]);
 
   useEffect(() => {
     productsRef.current = products;
@@ -88,7 +95,8 @@ export default function Shop() {
       undefined,
       searchQuery ?? undefined,
       productsRef.current.length,
-      PAGE_SIZE
+      PAGE_SIZE,
+      occasionId
     )
       .then((data) => {
         if (genRef.current !== gen) return;
@@ -102,7 +110,7 @@ export default function Shop() {
         fetchingMoreRef.current = false;
         if (genRef.current === gen) setLoadingMore(false);
       });
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, occasionId]);
 
   // Reconnects (and so re-checks current intersection) every time the list
   // grows — a plain IntersectionObserver only fires on enter/exit, but a
@@ -123,7 +131,11 @@ export default function Shop() {
   }, [loading, hasMore, loadMore, products.length]);
 
   function handleSelectCategory(category: string | null) {
-    setSearchParams(category ? { category } : {});
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (category) next.set("category", category); else next.delete("category");
+      return next;
+    });
   }
 
   return (
@@ -139,6 +151,12 @@ export default function Shop() {
       </section>
 
       <main className="mx-auto max-w-6xl px-4 pb-16">
+        {selectedOccasion !== null && (
+          <div className="mb-6 flex items-center justify-between gap-3 rounded-2xl bg-rose-50 p-4">
+            <span className="font-medium text-rose-800">{occasionName ? `Shop for ${occasionName}` : "Products for this occasion"}</span>
+            <button type="button" className="min-h-11 text-sm font-semibold text-rose-700 underline" onClick={() => setSearchParams(prev => { const next = new URLSearchParams(prev); next.delete("occasion"); return next; })}>Clear occasion</button>
+          </div>
+        )}
         {searchQuery && (
           <p className="mb-6 text-sm text-stone-500">
             Showing results for <span className="font-semibold text-stone-700">“{searchQuery}”</span>
@@ -180,7 +198,9 @@ export default function Shop() {
 
         {!loading && !error && products.length === 0 && (
           <p className="py-16 text-center text-stone-400">
-            {searchQuery
+            {selectedOccasion !== null
+              ? "No products assigned to this occasion match your filters yet."
+              : searchQuery
               ? `No products found for "${searchQuery}".`
               : "No products found in this category yet."}
           </p>
