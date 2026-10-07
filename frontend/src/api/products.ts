@@ -1,6 +1,7 @@
 import axios from "axios";
 import apiClient from "./client";
 import type {
+  CatalogSummary,
   Product,
   ProductInput,
   UploadResponse,
@@ -34,6 +35,24 @@ export async function adminListProducts(token: string): Promise<Product[]> {
 
 export async function getProduct(id: string | number): Promise<Product> {
   const { data } = await apiClient.get<Product>(`/products/${id}`);
+  return data;
+}
+
+/** Admin-scoped fetch — unlike getProduct, also returns inactive products,
+ * so a hidden product can still be opened for editing. */
+export async function adminGetProduct(
+  id: string | number,
+  token: string
+): Promise<Product> {
+  const { data } = await apiClient.get<Product>(`/admin/products/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+}
+
+/** Product count and the categories that have products, computed server-side. */
+export async function getCatalogSummary(): Promise<CatalogSummary> {
+  const { data } = await apiClient.get<CatalogSummary>("/products/summary");
   return data;
 }
 

@@ -26,7 +26,11 @@ CRAWLER_UA_SUBSTRINGS = [
 async def product_page(product_id: int, request: Request, db: Session = Depends(get_db)):
     ua = request.headers.get("user-agent", "").lower()
 
-    product = db.query(Product).filter(Product.id == product_id).first()
+    product = (
+        db.query(Product)
+        .filter(Product.id == product_id, Product.is_active.is_(True))
+        .first()
+    )
     if product is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
 

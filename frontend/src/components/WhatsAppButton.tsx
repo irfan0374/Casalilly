@@ -1,9 +1,6 @@
 import { buildWhatsAppLink } from "../lib/whatsapp";
 import type { Product } from "../types";
-
-const SHOP_PHONE = import.meta.env.VITE_WHATSAPP_NUMBER || "+10000000000";
-const SITE_BASE_URL =
-  import.meta.env.VITE_SITE_BASE_URL || "http://localhost:8000";
+import { SHOP_PHONE, SITE_BASE_URL } from "../lib/config";
 
 interface WhatsAppButtonProps {
   product: Pick<Product, "id" | "name" | "price">;

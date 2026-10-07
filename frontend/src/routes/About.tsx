@@ -11,13 +11,10 @@ import type { SiteSettings } from "../types";
 import teamBigImage from "../assets/about/team-1.png";
 import teamSmall1Image from "../assets/about/team-2.jpeg";
 import teamSmall2Image from "../assets/about/team-3.jpeg";
+import { DEFAULT_ABOUT_BODY, DEFAULT_ABOUT_HEADING, SHOP_PHONE } from "../lib/config";
 
-const SHOP_PHONE = import.meta.env.VITE_WHATSAPP_NUMBER || "+9710586569933";
 const INSTAGRAM_HANDLE = "casalily26";
 
-const DEFAULT_HEADING = "Casa Lily Flowers & Plants";
-const DEFAULT_BODY =
-  "Casa Lily Boutique merges premium botanicals with elite craftsmanship, delivering sophisticated floral experiences for every space.";
 
 const STORY_TILES = [
   {
@@ -52,8 +49,8 @@ export default function About() {
       .catch(() => setSettings(null));
   }, []);
 
-  const heading = settings?.about_heading || DEFAULT_HEADING;
-  const body = settings?.about_body || DEFAULT_BODY;
+  const heading = settings?.about_heading || DEFAULT_ABOUT_HEADING;
+  const body = settings?.about_body || DEFAULT_ABOUT_BODY;
 
   return (
     <PublicLayout>

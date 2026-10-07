@@ -1,11 +1,16 @@
 import { useState } from "react";
-import { Loader2, RotateCcw, RotateCw } from "lucide-react";
+import { Camera, Loader2, RefreshCw, RotateCcw, RotateCw } from "lucide-react";
 import { uploadImage } from "../../api/products";
 import { useAuth } from "../../context/AuthContext";
 
 interface ImageUploaderProps {
   imageUrl: string | null;
   onUploaded: (url: string, publicId: string) => void;
+  /** "portrait" (4:5) for product cover photos, "wide" (16:9) for banners. */
+  aspect?: "portrait" | "wide";
+  emptyLabel?: string;
+  emptyHint?: string;
+  error?: string | null;
 }
 
 /** Rotates image bytes by ±90/180 degrees on a canvas and re-exports them.
@@ -40,6 +45,10 @@ async function rotateImageBlob(source: Blob, degrees: number): Promise<Blob> {
 export default function ImageUploader({
   imageUrl,
   onUploaded,
+  aspect = "portrait",
+  emptyLabel = "Tap to add a photo",
+  emptyHint,
+  error: fieldError,
 }: ImageUploaderProps) {
   const { token } = useAuth();
   const [preview, setPreview] = useState<string | null>(imageUrl);
@@ -58,8 +67,7 @@ export default function ImageUploader({
     if (!file || !token) return;
 
     // Local preview immediately, ahead of the network round trip.
-    const localPreview = URL.createObjectURL(file);
-    setPreview(localPreview);
+    setPreview(URL.createObjectURL(file));
     setCurrentBlob(file);
     setUploading(true);
     setError(null);
@@ -75,9 +83,7 @@ export default function ImageUploader({
     }
   }
 
-  async function handleRotate(e: React.MouseEvent, degrees: 90 | -90) {
-    e.preventDefault();
-    e.stopPropagation();
+  async function handleRotate(degrees: 90 | -90) {
     if (!preview || !token || uploading || rotating) return;
     setRotating(true);
     setError(null);
@@ -90,8 +96,7 @@ export default function ImageUploader({
         { type: rotatedBlob.type }
       );
 
-      const localPreview = URL.createObjectURL(rotatedBlob);
-      setPreview(localPreview);
+      setPreview(URL.createObjectURL(rotatedBlob));
       setCurrentBlob(rotatedBlob);
 
       setUploading(true);
@@ -107,70 +112,82 @@ export default function ImageUploader({
   }
 
   const busy = uploading || rotating;
+  const ratio = aspect === "wide" ? "aspect-video" : "aspect-[4/5]";
+  // The empty drop zone doesn't need the full portrait height — on a phone
+  // that would fill the whole screen before any photo is picked.
+  const emptyRatio = aspect === "wide" ? "aspect-video" : "aspect-[4/3]";
+  const shownError = error ?? fieldError;
+
+  const fileInput = (
+    <input type="file" accept="image/*" onChange={handleFileChange} disabled={busy} className="sr-only" />
+  );
 
   return (
-    <div className="flex flex-col gap-3">
-      <label className="text-sm font-medium text-stone-700">
-        Image <span className="text-red-500">*</span>
-      </label>
-
+    <div className="flex flex-col gap-2">
       {preview ? (
-        <label className="relative h-40 w-40 cursor-pointer overflow-hidden rounded-xl border border-rose-100 bg-rose-50">
-          <img
-            src={preview}
-            alt="Preview"
-            className="h-full w-full object-cover"
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            disabled={busy}
-            className="hidden"
-          />
+        <div className={`relative ${ratio} w-full overflow-hidden rounded-2xl bg-stone-100`}>
+          <img src={preview} alt="" className="h-full w-full object-cover" />
 
-          <button
-            type="button"
-            onClick={(e) => handleRotate(e, -90)}
-            disabled={busy}
-            aria-label="Rotate left"
-            className="absolute bottom-1 left-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 disabled:opacity-50"
+          <div className="absolute right-3 top-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => handleRotate(-90)}
+              disabled={busy}
+              aria-label="Rotate left"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-stone-700 shadow-sm backdrop-blur transition hover:bg-white disabled:opacity-50"
+            >
+              <RotateCcw className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleRotate(90)}
+              disabled={busy}
+              aria-label="Rotate right"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-stone-700 shadow-sm backdrop-blur transition hover:bg-white disabled:opacity-50"
+            >
+              <RotateCw className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+
+          <label
+            className={`absolute bottom-3 right-3 flex h-10 cursor-pointer items-center gap-1.5 rounded-full bg-rose-600 px-4 text-sm font-semibold text-white shadow-md transition hover:bg-rose-700 ${
+              busy ? "pointer-events-none opacity-60" : ""
+            }`}
           >
-            <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => handleRotate(e, 90)}
-            disabled={busy}
-            aria-label="Rotate right"
-            className="absolute bottom-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 disabled:opacity-50"
-          >
-            <RotateCw className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            Change
+            {fileInput}
+          </label>
 
           {busy && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/70">
-              <Loader2 className="h-6 w-6 animate-spin text-rose-500" aria-hidden="true" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/70 backdrop-blur-[1px]">
+              <Loader2 className="h-7 w-7 animate-spin text-rose-600" aria-hidden="true" />
+              <span className="text-sm font-medium text-stone-700">
+                {rotating ? "Rotating…" : "Uploading…"}
+              </span>
             </div>
           )}
-        </label>
+        </div>
       ) : (
-        <label className="flex h-40 w-40 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-rose-200 text-rose-400 transition hover:border-rose-400 hover:text-rose-500">
-          <span className="text-2xl leading-none">+</span>
-          <span className="text-xs">Add Image</span>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            disabled={busy}
-            className="hidden"
-          />
+        <label
+          className={`flex ${emptyRatio} w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed bg-rose-50/40 px-6 text-center transition hover:bg-rose-50 ${
+            shownError ? "border-red-300" : "border-rose-200 hover:border-rose-400"
+          }`}
+        >
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-rose-600 shadow-sm">
+            <Camera className="h-6 w-6" aria-hidden="true" />
+          </span>
+          <span className="text-[15px] font-semibold text-stone-800">{emptyLabel}</span>
+          {emptyHint && <span className="text-sm text-stone-500">{emptyHint}</span>}
+          {fileInput}
         </label>
       )}
 
-      {rotating && <p className="text-sm text-stone-400">Rotating…</p>}
-      {uploading && !rotating && <p className="text-sm text-stone-400">Uploading…</p>}
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {shownError && (
+        <p className="text-sm text-red-600" role="alert">
+          {shownError}
+        </p>
+      )}
     </div>
   );
 }

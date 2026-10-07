@@ -7,9 +7,8 @@ from app.database import Base
 class SiteSettings(Base):
     """Singleton row (id=1) holding site-wide, admin-editable content.
 
-    Hero banners and homepage carousels live in their own tables
-    (HeroSlide, Carousel) since admins can create several of each; this row
-    now only holds the About page copy.
+    Hero banners live in their own table (HeroSlide) since admins can create
+    several; this row only holds the About page copy.
     """
 
     __tablename__ = "site_settings"

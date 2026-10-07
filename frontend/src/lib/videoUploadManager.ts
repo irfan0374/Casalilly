@@ -123,9 +123,11 @@ export function startVideoJob({
         const targetId = submittedProductId;
         updateJob(jobToken, { status: "attaching", productId: targetId });
         if (targetId != null) {
-          // video_public_id isn't tracked on the frontend at all (matching
-          // the existing image_public_id precedent) — only the URL round-trips.
-          await updateProduct(targetId, { video_url: url }, authToken);
+          await updateProduct(
+            targetId,
+            { video_url: url, video_public_id: public_id },
+            authToken
+          );
         }
       } else {
         onReadyForForm(url, public_id);
@@ -193,4 +195,10 @@ export function useVideoJobForProduct(
   return useSyncExternalStore(subscribeVideoJobs, () =>
     getVideoJobForProduct(productId)
   );
+}
+
+/** Every job currently tracked (running, or just finished/failed) — used by
+ * the dashboard to list uploads still in progress. */
+export function useVideoJobs(): ReadonlyMap<string, VideoJob> {
+  return useSyncExternalStore(subscribeVideoJobs, getVideoJobsSnapshot);
 }

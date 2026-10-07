@@ -11,11 +11,17 @@ export interface Product {
   id: number | string;
   name: string;
   description: string;
-  price: number;
+  /** The API serializes the Decimal price column as a string, e.g. "120.00". */
+  price: string;
+  /** The primary category — always categories[0]; used for card labels. */
   category: ProductCategory | string;
+  categories: string[];
   image_url: string | null;
+  image_public_id: string | null;
   extra_image_urls: string[] | null;
+  extra_image_public_ids: string[] | null;
   video_url: string | null;
+  video_public_id: string | null;
   is_active: boolean;
   is_featured: boolean;
   created_at: string;
@@ -26,10 +32,16 @@ export interface ProductInput {
   name: string;
   description: string;
   price: number;
-  category: string;
+  /** At least one; the first is the product's primary category. */
+  categories: string[];
   image_url: string | null;
+  image_public_id: string | null;
   extra_image_urls: string[];
+  /** Kept index-aligned with extra_image_urls; "" for an image saved before
+   * public ids were tracked (the backend then derives it from the URL). */
+  extra_image_public_ids: string[];
   video_url: string | null;
+  video_public_id: string | null;
   is_active: boolean;
   is_featured: boolean;
 }
@@ -63,6 +75,11 @@ export interface HeroSlideInput {
   subheading: string | null;
   is_active: boolean;
   sort_order: number;
+}
+
+export interface CatalogSummary {
+  total_products: number;
+  categories_with_products: string[];
 }
 
 export interface LoginResponse {

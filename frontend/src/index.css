@@ -16,6 +16,10 @@
   --color-rose-700: hsl(287 68% 39%);
   --color-rose-800: hsl(287 70% 32%);
   --color-rose-900: hsl(287 65% 26%);
+
+  /* Admin panel typefaces — see index.html for the font import. */
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-admin: Inter, system-ui, "Segoe UI", Roboto, sans-serif;
 }
 
 body {

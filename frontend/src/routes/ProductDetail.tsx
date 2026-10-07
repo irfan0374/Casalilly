@@ -85,14 +85,27 @@ export default function ProductDetail() {
     };
   }, [id]);
 
+  // Related picks come from the same category, so this waits for the product
+  // itself to know which one — a small page of it, not the whole catalog.
+  const productCategory = product?.category;
   useEffect(() => {
-    if (!id) return;
+    if (!id || !productCategory) return;
     let cancelled = false;
-    getProducts()
-      .then((all) => {
+    // Topped up with the newest products from any category when this one
+    // has fewer than 4 others to show.
+    Promise.all([
+      getProducts(productCategory, undefined, undefined, 0, 13),
+      getProducts(undefined, undefined, undefined, 0, 13),
+    ])
+      .then(([sameCategory, newest]) => {
         if (cancelled) return;
-        const others = all.filter((p) => String(p.id) !== String(id));
-        setRelated(shuffle(others).slice(0, 4));
+        const isOther = (p: Product) => String(p.id) !== String(id);
+        const picks = shuffle(sameCategory.filter(isOther)).slice(0, 4);
+        const pickedIds = new Set(picks.map((p) => String(p.id)));
+        const fillers = shuffle(
+          newest.filter((p) => isOther(p) && !pickedIds.has(String(p.id)))
+        );
+        setRelated([...picks, ...fillers].slice(0, 4));
       })
       .catch(() => {
         if (!cancelled) {
@@ -102,7 +115,7 @@ export default function ProductDetail() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, productCategory]);
 
   if (loading) {
     return (

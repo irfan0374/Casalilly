@@ -10,9 +10,12 @@ import NotFound from "./routes/NotFound";
 import AdminLogin from "./routes/admin/AdminLogin";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./routes/admin/AdminDashboard";
+import AdminProducts from "./routes/admin/AdminProducts";
+import AdminMore from "./routes/admin/AdminMore";
 import AdminProductForm from "./routes/admin/AdminProductForm";
 import HeroSlideList from "./routes/admin/HeroSlideList";
 import HeroSlideForm from "./routes/admin/HeroSlideForm";
+import AboutSettingsForm from "./routes/admin/AboutSettingsForm";
 
 export default function App() {
   return (
@@ -36,6 +39,8 @@ export default function App() {
                 }
               >
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/products" element={<AdminProducts />} />
+                <Route path="/admin/more" element={<AdminMore />} />
                 <Route path="/admin/products/new" element={<AdminProductForm />} />
                 <Route
                   path="/admin/products/:id/edit"
@@ -47,6 +52,7 @@ export default function App() {
                   path="/admin/hero-slides/:id/edit"
                   element={<HeroSlideForm />}
                 />
+                <Route path="/admin/about" element={<AboutSettingsForm />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

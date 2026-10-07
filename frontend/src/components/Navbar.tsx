@@ -2,8 +2,7 @@ import { Link, NavLink } from "react-router-dom";
 import logo from "../assets/logo-180.png";
 import { buildGeneralWhatsAppLink } from "../lib/whatsapp";
 import { useWishlist } from "../context/WishlistContext";
-
-const SHOP_PHONE = import.meta.env.VITE_WHATSAPP_NUMBER || "+10000000000";
+import { SHOP_PHONE } from "../lib/config";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `text-sm font-medium transition hover:text-rose-600 ${

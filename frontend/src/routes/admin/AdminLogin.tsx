@@ -1,5 +1,7 @@
-import { useState } from "react";
 import { useLocation, useNavigate, type Location } from "react-router-dom";
+import { ShieldCheck } from "lucide-react";
+import logo from "../../assets/logo-180.png";
+import LoginForm from "../../components/admin/LoginForm";
 import { useAuth } from "../../context/AuthContext";
 
 interface LocationState {
@@ -10,72 +12,39 @@ export default function AdminLogin() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    try {
-      await login(username, password);
-      const state = location.state as LocationState | null;
-      navigate(state?.from?.pathname ?? "/admin", { replace: true });
-    } catch {
-      setError("Invalid username or password.");
-    } finally {
-      setSubmitting(false);
-    }
+  async function handleLogin(username: string, password: string) {
+    await login(username, password);
+    const state = location.state as LocationState | null;
+    navigate(state?.from?.pathname ?? "/admin", { replace: true });
   }
 
   return (
-    <div className="flex min-h-[70vh] items-center justify-center px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-2xl border border-rose-100 bg-white p-8 shadow-sm"
-      >
-        <h1 className="mb-1 text-2xl font-bold text-stone-800">
-          Admin Login
-        </h1>
-        <p className="mb-6 text-sm text-stone-500">
-          Sign in to manage Casa Lilly's catalog.
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fcf9fd] px-5 py-10 font-admin text-stone-800 antialiased">
+      {/* Soft decorative petals */}
+      <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-rose-100/70 blur-2xl" aria-hidden="true" />
+      <div className="pointer-events-none absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-rose-100/50 blur-3xl" aria-hidden="true" />
+
+      <div className="relative w-full max-w-sm">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <img
+            src={logo}
+            alt="Casa Lilly"
+            className="h-24 w-24 rounded-full bg-white object-cover p-1 shadow-sm ring-1 ring-rose-100"
+          />
+          <h1 className="mt-6 font-display text-4xl font-bold text-stone-900">Welcome back</h1>
+          <p className="mt-2 text-[15px] text-stone-500">Sign in to manage your shop</p>
+        </div>
+
+        <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-stone-100">
+          <LoginForm onLogin={handleLogin} submitLabel="Sign in" />
+        </div>
+
+        <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-stone-400">
+          <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+          Casa Lilly admin · authorised staff only
         </p>
-
-        <label className="mb-1 block text-sm font-medium text-stone-700">
-          Username
-        </label>
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          autoFocus
-          className="mb-4 w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-400"
-        />
-
-        <label className="mb-1 block text-sm font-medium text-stone-700">
-          Password
-        </label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="mb-4 w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-400"
-        />
-
-        {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-lg bg-rose-600 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-60"
-        >
-          {submitting ? "Signing in…" : "Sign in"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

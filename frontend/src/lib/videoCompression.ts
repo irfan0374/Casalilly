@@ -11,6 +11,12 @@ const CORE_BASE_URL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
 // for little to no benefit.
 const COMPRESSION_THRESHOLD_BYTES = 8 * 1024 * 1024;
 
+// ffmpeg.load() never rejects if its worker fails to start — it just waits.
+// Past this, give up and upload the original instead of sitting at
+// "Compressing 0%" forever. Generous, since the ~25MB core may be
+// downloading over a slow phone connection the first time.
+const LOAD_TIMEOUT_MS = 90 * 1000;
+
 let ffmpegSingleton: FFmpeg | null = null;
 let loadPromise: Promise<FFmpeg> | null = null;
 
@@ -19,8 +25,8 @@ let loadPromise: Promise<FFmpeg> | null = null;
 async function getFFmpeg(): Promise<FFmpeg> {
   if (ffmpegSingleton) return ffmpegSingleton;
   if (!loadPromise) {
-    loadPromise = (async () => {
-      const ffmpeg = new FFmpeg();
+    const ffmpeg = new FFmpeg();
+    const load = (async () => {
       await ffmpeg.load({
         coreURL: await toBlobURL(`${CORE_BASE_URL}/ffmpeg-core.js`, "text/javascript"),
         wasmURL: await toBlobURL(`${CORE_BASE_URL}/ffmpeg-core.wasm`, "application/wasm"),
@@ -28,6 +34,18 @@ async function getFFmpeg(): Promise<FFmpeg> {
       ffmpegSingleton = ffmpeg;
       return ffmpeg;
     })();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error("Timed out loading the video compressor")), LOAD_TIMEOUT_MS);
+    });
+    loadPromise = Promise.race([load, timeout])
+      .catch((err) => {
+        // Don't cache a failed load — let the next video try again.
+        ffmpeg.terminate();
+        loadPromise = null;
+        throw err;
+      })
+      .finally(() => clearTimeout(timer));
   }
   return loadPromise;
 }

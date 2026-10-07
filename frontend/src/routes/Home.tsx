@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Flower2, Package, Smile, Sparkles } from "lucide-react";
-import { getCategories, getProducts } from "../api/products";
+import { getCatalogSummary, getCategories } from "../api/products";
 import { getHeroSlides } from "../api/heroSlides";
 import BestSellersSection from "../components/BestSellersSection";
 import HeroSearchBar from "../components/HeroSearchBar";
@@ -13,10 +13,10 @@ import SearchOverlay from "../components/SearchOverlay";
 import { categoryIcon, categoryImage, formatCategory } from "../lib/categories";
 import storyImage from "../assets/image1.jpeg";
 import personalizedImage from "../assets/personalized1.jpeg";
-import type { HeroSlide, Product } from "../types";
+import type { CatalogSummary, HeroSlide } from "../types";
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [summary, setSummary] = useState<CatalogSummary | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,14 +48,14 @@ export default function Home() {
   }, [categories.length]);
 
   useEffect(() => {
-    Promise.all([getProducts(), getCategories(), getHeroSlides()])
-      .then(([productData, categoryData, heroData]) => {
-        setProducts(productData);
+    Promise.all([getCatalogSummary(), getCategories(), getHeroSlides()])
+      .then(([summaryData, categoryData, heroData]) => {
+        setSummary(summaryData);
         setCategories(categoryData);
         setHeroSlides(heroData);
       })
       .catch(() => {
-        setProducts([]);
+        setSummary(null);
         setCategories([]);
         setHeroSlides([]);
       })
@@ -65,13 +65,10 @@ export default function Home() {
   // Best Sellers should only offer tabs for categories that actually have
   // products — an empty category tab would just show "No products in this
   // category yet." every time, which isn't useful to click through to.
-  const categoriesWithProducts = useMemo(
-    () => categories.filter((c) => products.some((p) => p.category === c)),
-    [categories, products]
-  );
+  const categoriesWithProducts = summary?.categories_with_products ?? [];
 
 const stats = [
-      { icon: Flower2, value: `${products.length}+`, label: "Products Available" },
+      { icon: Flower2, value: `${summary?.total_products ?? 0}+`, label: "Products Available" },
       { icon: Package, value: `${categories.length}`, label: "Categories" },
       { icon: Smile, value: "1000+", label: "Happy customer" },
       { icon: Sparkles, value: "Fresh", label: "Handpicked Daily" },

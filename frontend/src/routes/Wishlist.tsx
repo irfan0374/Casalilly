@@ -3,10 +3,7 @@ import PublicLayout from "../components/PublicLayout";
 import { useWishlist } from "../context/WishlistContext";
 import { buildBulkWhatsAppLink } from "../lib/whatsapp";
 import { formatCategory } from "../lib/categories";
-
-const SHOP_PHONE = import.meta.env.VITE_WHATSAPP_NUMBER || "+10000000000";
-const SITE_BASE_URL =
-  import.meta.env.VITE_SITE_BASE_URL || "http://localhost:8000";
+import { SHOP_PHONE, SITE_BASE_URL } from "../lib/config";
 
 const FALLBACK_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23fbe7ef'/%3E%3C/svg%3E";

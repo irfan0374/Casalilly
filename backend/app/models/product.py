@@ -12,7 +12,10 @@ class Product(Base):
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     price = Column(Numeric(10, 2), nullable=False)
+    # The primary category (always categories[0]) — used for the product's
+    # label on cards. Filtering by category matches any entry in `categories`.
     category = Column(String(50), index=True, nullable=False)
+    categories = Column(ARRAY(String(50)), nullable=False, server_default="{}")
     image_url = Column(Text, nullable=False)
     image_public_id = Column(String(255), nullable=True)
     # Up to 3 additional gallery images (image_url is the required 1st/cover image, for 4 total).

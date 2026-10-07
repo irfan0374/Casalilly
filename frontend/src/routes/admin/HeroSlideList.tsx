@@ -1,21 +1,23 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Eye, EyeOff, Pencil, Trash2 } from "lucide-react";
-import {
-  adminListHeroSlides,
-  deleteHeroSlide,
-  updateHeroSlide,
-} from "../../api/heroSlides";
-import AdminTableSkeleton from "../../components/admin/AdminTableSkeleton";
+import { ArrowDown, ArrowUp, Clock, EyeOff, GalleryHorizontal, Lightbulb, Pencil, Plus } from "lucide-react";
+import { adminListHeroSlides, updateHeroSlide } from "../../api/heroSlides";
+import { LinkButton } from "../../components/admin/ui/Button";
+import { Pill } from "../../components/admin/ui/Chip";
+import { EmptyState, ErrorState, Fab, PageHeader } from "../../components/admin/ui/Layout";
+import { useToast } from "../../components/admin/ui/Toast";
+import { Toggle } from "../../components/admin/ui/Toggle";
 import { useAuth } from "../../context/AuthContext";
+import { timeAgo } from "../../lib/format";
 import type { HeroSlide } from "../../types";
 
 export default function HeroSlideList() {
   const { token } = useAuth();
+  const toast = useToast();
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [busyId, setBusyId] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
 
   function load() {
     if (!token) return;
@@ -23,155 +25,194 @@ export default function HeroSlideList() {
     setError(null);
     adminListHeroSlides(token)
       .then(setSlides)
-      .catch(() => setError("Couldn't load hero banners."))
+      .catch(() => setError("Couldn't load banners. Check your connection and try again."))
       .finally(() => setLoading(false));
   }
 
   useEffect(load, [token]);
 
-  async function handleToggleActive(slide: HeroSlide) {
+  async function toggleActive(slide: HeroSlide) {
     if (!token) return;
-    setBusyId(slide.id);
+    setBusy(true);
+    setSlides((prev) => prev.map((s) => (s.id === slide.id ? { ...s, is_active: !s.is_active } : s)));
     try {
-      const updated = await updateHeroSlide(
-        slide.id,
-        { is_active: !slide.is_active },
-        token
-      );
+      const updated = await updateHeroSlide(slide.id, { is_active: !slide.is_active }, token);
       setSlides((prev) => prev.map((s) => (s.id === slide.id ? updated : s)));
+      toast(slide.is_active ? "Banner hidden" : "Banner is live");
     } catch {
-      window.alert("Failed to update hero banner.");
+      setSlides((prev) => prev.map((s) => (s.id === slide.id ? slide : s)));
+      toast("Couldn't update the banner. Please try again.", "error");
     } finally {
-      setBusyId(null);
+      setBusy(false);
     }
   }
 
-  async function handleDelete(slide: HeroSlide) {
+  /** Moves a banner one place up/down, then renumbers every banner's
+   * sort_order to its new position so the order is unambiguous. */
+  async function move(index: number, direction: -1 | 1) {
     if (!token) return;
-    if (!window.confirm("Delete this hero banner? This cannot be undone.")) {
-      return;
-    }
-    setBusyId(slide.id);
+    const target = index + direction;
+    if (target < 0 || target >= slides.length) return;
+    const previous = slides;
+    const reordered = [...slides];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    const renumbered = reordered.map((s, i) => ({ ...s, sort_order: i }));
+    setSlides(renumbered);
+    setBusy(true);
     try {
-      await deleteHeroSlide(slide.id, token);
-      setSlides((prev) => prev.filter((s) => s.id !== slide.id));
+      await Promise.all(
+        renumbered
+          .filter((s) => previous.find((p) => p.id === s.id)?.sort_order !== s.sort_order)
+          .map((s) => updateHeroSlide(s.id, { sort_order: s.sort_order }, token))
+      );
     } catch {
-      window.alert("Failed to delete hero banner.");
+      setSlides(previous);
+      toast("Couldn't change the order. Please try again.", "error");
     } finally {
-      setBusyId(null);
+      setBusy(false);
     }
   }
+
+  const liveCount = slides.filter((s) => s.is_active).length;
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-stone-800">Hero Banners</h1>
-          <p className="text-sm text-stone-500">
-            Create several — the homepage rotates through the active ones.
-          </p>
-        </div>
-        <Link
-          to="/admin/hero-slides/new"
-          className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
-        >
-          + Add Hero Banner
-        </Link>
-      </div>
+      <PageHeader
+        title="Banners"
+        badge={
+          !loading &&
+          slides.length > 0 && (
+            <Pill tone="rose" dot>
+              {slides.length} banner{slides.length === 1 ? "" : "s"} · {liveCount} live
+            </Pill>
+          )
+        }
+        description="Live banners rotate at the top of the homepage."
+        action={
+          // Desktop only — phones get the floating + button instead.
+          <div className="hidden lg:block">
+            <LinkButton
+              to="/admin/hero-slides/new"
+              icon={<Plus className="h-4 w-4" aria-hidden="true" />}
+            >
+              Add Banner
+            </LinkButton>
+          </div>
+        }
+      />
 
-      {loading && <AdminTableSkeleton columns={5} rows={4} />}
-      {!loading && error && (
-        <p className="py-16 text-center text-red-500">{error}</p>
+      {loading && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="aspect-[16/11] animate-pulse rounded-3xl bg-white ring-1 ring-stone-100" />
+          ))}
+        </div>
       )}
+
+      {!loading && error && <ErrorState message={error} onRetry={load} />}
+
       {!loading && !error && slides.length === 0 && (
-        <p className="py-16 text-center text-stone-400">
-          No hero banners yet. Add your first one.
-        </p>
+        <EmptyState
+          icon={<GalleryHorizontal className="h-7 w-7" aria-hidden="true" />}
+          title="No banners yet"
+          description="Add a wide photo with a short heading to welcome visitors on the homepage."
+          action={
+            <LinkButton to="/admin/hero-slides/new" icon={<Plus className="h-4 w-4" aria-hidden="true" />}>
+              Add your first banner
+            </LinkButton>
+          }
+        />
       )}
 
       {!loading && !error && slides.length > 0 && (
-        <div className="overflow-x-auto rounded-xl border border-rose-100">
-          <table className="min-w-full divide-y divide-rose-100 text-sm">
-            <thead className="bg-rose-50 text-left text-stone-500">
-              <tr>
-                <th className="px-4 py-3 font-medium">Image</th>
-                <th className="px-4 py-3 font-medium">Heading</th>
-                <th className="px-4 py-3 font-medium">Order</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-rose-50 bg-white">
-              {slides.map((slide) => (
-                <tr key={slide.id}>
-                  <td className="px-4 py-3">
-                    <div className="h-12 w-20 overflow-hidden rounded-lg bg-rose-50">
-                      <img
-                        src={slide.image_url}
-                        alt={slide.heading ?? ""}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-medium text-stone-800">
-                    {slide.heading || (
-                      <span className="text-stone-400">No heading</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-stone-500">{slide.sort_order}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        slide.is_active
-                          ? "bg-green-100 text-green-700"
-                          : "bg-stone-100 text-stone-500"
-                      }`}
+        <>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {slides.map((slide, index) => (
+              <article key={slide.id} className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-stone-100">
+                <div className="flex items-center gap-2 px-3 py-2.5">
+                  <div className="flex">
+                    <button
+                      type="button"
+                      onClick={() => move(index, -1)}
+                      disabled={busy || index === 0}
+                      aria-label="Move up"
+                      className="flex h-10 w-10 items-center justify-center rounded-full text-stone-500 transition hover:bg-stone-100 disabled:opacity-30"
                     >
-                      {slide.is_active ? "Active" : "Disabled"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-3">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleActive(slide)}
-                        disabled={busyId === slide.id}
-                        aria-label={slide.is_active ? "Disable hero banner" : "Activate hero banner"}
-                        title={slide.is_active ? "Disable" : "Activate"}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 disabled:opacity-50"
-                      >
-                        {slide.is_active ? (
-                          <Eye className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-                        ) : (
-                          <EyeOff className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-                        )}
-                      </button>
-                      <Link
-                        to={`/admin/hero-slides/${slide.id}/edit`}
-                        aria-label="Edit hero banner"
-                        title="Edit"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50"
-                      >
-                        <Pencil className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(slide)}
-                        disabled={busyId === slide.id}
-                        aria-label="Delete hero banner"
-                        title="Delete"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-50 disabled:opacity-50"
-                      >
-                        <Trash2 className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                      <ArrowUp className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => move(index, 1)}
+                      disabled={busy || index === slides.length - 1}
+                      aria-label="Move down"
+                      className="flex h-10 w-10 items-center justify-center rounded-full text-stone-500 transition hover:bg-stone-100 disabled:opacity-30"
+                    >
+                      <ArrowDown className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                  <span className="text-sm font-semibold text-stone-700">Position {index + 1}</span>
+                  {slide.is_active ? <Pill tone="green" dot>Live</Pill> : <Pill tone="stone">Hidden</Pill>}
+                  <span className="ml-auto">
+                    <Toggle
+                      checked={slide.is_active}
+                      onChange={() => toggleActive(slide)}
+                      disabled={busy}
+                      label={slide.is_active ? "Hide banner" : "Show banner"}
+                    />
+                  </span>
+                </div>
+
+                <Link to={`/admin/hero-slides/${slide.id}/edit`} className="relative block aspect-video bg-stone-100">
+                  <img
+                    src={slide.image_url}
+                    alt=""
+                    className={`h-full w-full object-cover ${slide.is_active ? "" : "opacity-60 grayscale-[30%]"}`}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-4">
+                    <p className="font-display text-xl font-semibold leading-tight text-white">
+                      {slide.heading || <span className="italic text-white/70">No heading</span>}
+                    </p>
+                    {slide.subheading && (
+                      <p className="mt-1 line-clamp-1 text-sm text-white/85">{slide.subheading}</p>
+                    )}
+                  </div>
+                </Link>
+
+                <div className="flex items-center justify-between px-4 py-2.5 text-sm text-stone-500">
+                  <span className="flex items-center gap-1.5">
+                    {slide.is_active ? (
+                      <>
+                        <Clock className="h-4 w-4" aria-hidden="true" />
+                        Edited {timeAgo(slide.updated_at ?? slide.created_at)}
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-4 w-4" aria-hidden="true" />
+                        Hidden from homepage
+                      </>
+                    )}
+                  </span>
+                  <Link
+                    to={`/admin/hero-slides/${slide.id}/edit`}
+                    aria-label="Edit banner"
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-stone-600 transition hover:bg-stone-100 hover:text-rose-700"
+                  >
+                    <Pencil className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-5 flex gap-3 rounded-3xl bg-rose-50/60 p-4 text-sm text-stone-600">
+            <Lightbulb className="h-5 w-5 flex-shrink-0 text-rose-600" aria-hidden="true" />
+            <p>Use the arrows to change the order. Live banners rotate on the homepage in this order.</p>
+          </div>
+        </>
       )}
+
+      <Fab to="/admin/hero-slides/new" label="Add banner" />
     </div>
   );
 }

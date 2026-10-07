@@ -3,8 +3,7 @@ import { NavLink } from "react-router-dom";
 import logo from "../assets/logo-180.png";
 import { buildGeneralWhatsAppLink } from "../lib/whatsapp";
 import { useWishlist } from "../context/WishlistContext";
-
-const SHOP_PHONE = import.meta.env.VITE_WHATSAPP_NUMBER || "+10000000000";
+import { SHOP_PHONE } from "../lib/config";
 
 const tabClass = ({ isActive }: { isActive: boolean }) =>
   `relative flex h-11 w-11 items-center justify-center rounded-full transition ${

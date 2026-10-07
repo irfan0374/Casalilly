@@ -1,15 +1,21 @@
-from typing import List
+from typing import List, Set, Tuple
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.deps import get_current_admin, get_db
 from app.models.admin import Admin
 from app.models.hero_slide import HeroSlide
 from app.schemas.hero_slide import HeroSlideCreate, HeroSlideOut, HeroSlideUpdate
+from app.services.cloudinary_service import destroy_assets, public_id_from_url
 
 public_router = APIRouter(prefix="/api", tags=["hero-slides"])
 admin_router = APIRouter(prefix="/api/admin", tags=["admin-hero-slides"])
+
+
+def _slide_assets(slide: HeroSlide) -> Set[Tuple[str, str]]:
+    public_id = slide.image_public_id or public_id_from_url(slide.image_url)
+    return {(public_id, "image")} if public_id else set()
 
 
 @public_router.get("/hero-slides", response_model=List[HeroSlideOut])
@@ -63,6 +69,7 @@ def create_hero_slide(
 def update_hero_slide(
     slide_id: int,
     payload: HeroSlideUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin),
 ) -> HeroSlide:
@@ -70,17 +77,23 @@ def update_hero_slide(
     if slide is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hero slide not found")
 
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    assets_before = _slide_assets(slide)
+    changes = payload.model_dump(exclude_unset=True)
+    if "image_url" in changes and "image_public_id" not in changes:
+        changes["image_public_id"] = None
+    for field, value in changes.items():
         setattr(slide, field, value)
 
     db.commit()
     db.refresh(slide)
+    background_tasks.add_task(destroy_assets, assets_before - _slide_assets(slide))
     return slide
 
 
 @admin_router.delete("/hero-slides/{slide_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_hero_slide(
     slide_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin),
 ) -> None:
@@ -88,5 +101,7 @@ def delete_hero_slide(
     if slide is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hero slide not found")
 
+    assets = _slide_assets(slide)
     db.delete(slide)
     db.commit()
+    background_tasks.add_task(destroy_assets, assets)

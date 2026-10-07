@@ -1,6 +1,5 @@
 import { buildGeneralWhatsAppLink } from "../lib/whatsapp";
-
-const SHOP_PHONE = import.meta.env.VITE_WHATSAPP_NUMBER || "+10000000000";
+import { SHOP_PHONE } from "../lib/config";
 
 export default function Footer() {
   return (

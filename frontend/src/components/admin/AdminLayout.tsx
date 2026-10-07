@@ -1,123 +1,171 @@
-import { useEffect, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
+import {
+  BookOpen,
+  Ellipsis,
+  ExternalLink,
+  Flower2,
+  GalleryHorizontal,
+  LayoutGrid,
+  LogOut,
+  type LucideIcon,
+} from "lucide-react";
 import logo from "../../assets/logo-180.png";
 import { useAuth } from "../../context/AuthContext";
+import { ToastProvider } from "./ui/Toast";
 
-const navItems = [
-  { to: "/admin", label: "Products", end: true },
-  { to: "/admin/hero-slides", label: "Hero Banners", end: false },
+interface NavItem {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  end?: boolean;
+}
+
+const SIDEBAR_ITEMS: NavItem[] = [
+  { to: "/admin", label: "Dashboard", icon: LayoutGrid, end: true },
+  { to: "/admin/products", label: "Products", icon: Flower2 },
+  { to: "/admin/hero-slides", label: "Banners", icon: GalleryHorizontal },
+  { to: "/admin/about", label: "About Page", icon: BookOpen },
 ];
 
-const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `block rounded-lg px-3 py-2 text-sm font-medium transition ${
-    isActive
-      ? "bg-rose-100 text-rose-700"
-      : "text-stone-600 hover:bg-rose-50 hover:text-rose-600"
-  }`;
+const TAB_ITEMS: NavItem[] = [
+  { to: "/admin", label: "Home", icon: LayoutGrid, end: true },
+  { to: "/admin/products", label: "Products", icon: Flower2 },
+  { to: "/admin/hero-slides", label: "Banners", icon: GalleryHorizontal },
+  { to: "/admin/more", label: "More", icon: Ellipsis },
+];
 
-export default function AdminLayout() {
-  const { logout } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+/** Add/edit screens are full-screen on mobile (own back-arrow header and
+ * sticky save bar), so the bottom tabs step out of the way there. */
+function isFormRoute(pathname: string): boolean {
+  return /\/(new|edit)$/.test(pathname);
+}
 
-  // Lock page scroll behind the drawer while it's open on mobile.
-  useEffect(() => {
-    document.body.style.overflow = sidebarOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [sidebarOpen]);
-
-  function closeSidebar() {
-    setSidebarOpen(false);
-  }
-
+function Brand() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-4 sm:py-10">
-      {/* Mobile top bar — hidden once the sidebar is permanently visible from sm up */}
-      <div className="mb-4 flex items-center justify-between border-b border-stone-200 pb-4 sm:hidden">
-        <div className="flex items-center gap-2.5">
-          <img src={logo} alt="" className="h-9 w-9 rounded-full object-cover" />
-          <div>
-            <p className="font-serif text-lg font-bold text-stone-800">
-              Casa Lilly
-            </p>
-            <p className="text-xs text-stone-400">Admin</p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Open menu"
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-stone-200 text-stone-600 transition hover:bg-stone-50"
-        >
-          <Menu className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
-        </button>
-      </div>
-
-      <div className="flex gap-8">
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-40 bg-black/40 sm:hidden"
-            onClick={closeSidebar}
-            aria-hidden="true"
-          />
-        )}
-
-        <aside
-          className={`fixed inset-y-0 left-0 z-50 w-64 transform overflow-y-auto bg-white p-5 shadow-xl transition-transform duration-300 ease-in-out sm:static sm:z-auto sm:w-48 sm:flex-shrink-0 sm:translate-x-0 sm:overflow-visible sm:bg-transparent sm:p-0 sm:shadow-none ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
-          <div className="mb-6 px-3 sm:px-0">
-            <div className="hidden items-center gap-2.5 sm:flex">
-              <img src={logo} alt="" className="h-9 w-9 rounded-full object-cover" />
-              <div>
-                <p className="font-serif text-lg font-bold text-stone-800">
-                  Casa Lilly
-                </p>
-                <p className="text-xs text-stone-400">Admin</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between sm:hidden">
-              <p className="text-sm font-semibold text-stone-800">Menu</p>
-              <button
-                type="button"
-                onClick={closeSidebar}
-                aria-label="Close menu"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100"
-              >
-                <X className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-
-          <nav className="flex flex-col gap-1">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                onClick={closeSidebar}
-                className={linkClass}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-          <button
-            type="button"
-            onClick={logout}
-            className="mt-6 block w-full rounded-lg border border-stone-200 px-3 py-2 text-left text-sm font-medium text-stone-600 transition hover:bg-stone-50"
-          >
-            Log out
-          </button>
-        </aside>
-
-        <div className="min-w-0 flex-1">
-          <Outlet />
-        </div>
+    <div className="flex items-center gap-3">
+      <img src={logo} alt="" className="h-10 w-10 rounded-full object-cover ring-1 ring-rose-100" />
+      <div className="leading-tight">
+        <p className="font-display text-lg font-semibold text-stone-900">Casa Lilly</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
+          Admin
+        </p>
       </div>
     </div>
+  );
+}
+
+function Sidebar() {
+  const { logout } = useAuth();
+  return (
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-stone-100 bg-white px-4 py-6 lg:flex">
+      <div className="px-2">
+        <Brand />
+      </div>
+      <nav className="mt-8 flex flex-col gap-1">
+        {SIDEBAR_ITEMS.map(({ to, label, icon: Icon, end }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className={({ isActive }) =>
+              `flex h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-medium transition ${
+                isActive
+                  ? "bg-rose-600 text-white shadow-sm shadow-rose-600/20"
+                  : "text-stone-600 hover:bg-rose-50 hover:text-rose-700"
+              }`
+            }
+          >
+            <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+            {label}
+          </NavLink>
+        ))}
+      </nav>
+      <div className="mt-auto flex flex-col gap-1">
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-medium text-stone-600 transition hover:bg-stone-50"
+        >
+          <ExternalLink className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+          View Website
+        </a>
+        <button
+          type="button"
+          onClick={logout}
+          className="flex h-11 items-center gap-3 rounded-xl px-3 text-left text-[15px] font-medium text-red-600 transition hover:bg-red-50"
+        >
+          <LogOut className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+          Log out
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+function BottomTabs() {
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+      <div className="mx-auto grid h-16 max-w-md grid-cols-4">
+        {TAB_ITEMS.map(({ to, label, icon: Icon, end }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center gap-0.5 text-xs font-medium transition ${
+                isActive ? "text-rose-700" : "text-stone-500"
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span
+                  className={`flex h-8 w-14 items-center justify-center rounded-full transition ${
+                    isActive ? "bg-rose-100" : ""
+                  }`}
+                >
+                  <Icon className="h-5 w-5" strokeWidth={isActive ? 2 : 1.75} aria-hidden="true" />
+                </span>
+                {label}
+              </>
+            )}
+          </NavLink>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+export default function AdminLayout() {
+  const { pathname } = useLocation();
+  const formRoute = isFormRoute(pathname);
+
+  return (
+    <ToastProvider>
+      <div className="min-h-screen bg-[#fcf9fd] font-admin text-stone-800 antialiased">
+        <Sidebar />
+
+        {!formRoute && (
+          <header className="sticky top-0 z-30 flex h-16 items-center border-b border-stone-100 bg-white/90 px-4 backdrop-blur lg:hidden">
+            <Brand />
+          </header>
+        )}
+
+        <div className="lg:pl-64">
+          <main
+            className={`mx-auto max-w-6xl px-4 lg:px-10 lg:pt-10 ${
+              formRoute
+                ? "pb-[calc(7rem+env(safe-area-inset-bottom))]"
+                : "pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-5 lg:pb-12"
+            }`}
+          >
+            <Outlet />
+          </main>
+        </div>
+
+        {!formRoute && <BottomTabs />}
+      </div>
+    </ToastProvider>
   );
 }
