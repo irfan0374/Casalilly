@@ -13,6 +13,9 @@ class HeroSlide(Base):
     id = Column(Integer, primary_key=True, index=True)
     image_url = Column(Text, nullable=False)
     image_public_id = Column(String(255), nullable=True)
+    # Portrait (4:5) version shown on phones; image_url is the wide desktop one.
+    mobile_image_url = Column(Text, nullable=True)
+    mobile_image_public_id = Column(String(255), nullable=True)
     heading = Column(String(255), nullable=True)
     subheading = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False, server_default="true")

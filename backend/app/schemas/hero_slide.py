@@ -7,6 +7,10 @@ from pydantic import BaseModel, ConfigDict
 class HeroSlideBase(BaseModel):
     image_url: str
     image_public_id: Optional[str] = None
+    # Optional here only so banners saved before mobile images existed still
+    # serialize; HeroSlideCreate requires it.
+    mobile_image_url: Optional[str] = None
+    mobile_image_public_id: Optional[str] = None
     heading: Optional[str] = None
     subheading: Optional[str] = None
     is_active: bool = True
@@ -14,12 +18,14 @@ class HeroSlideBase(BaseModel):
 
 
 class HeroSlideCreate(HeroSlideBase):
-    pass
+    mobile_image_url: str
 
 
 class HeroSlideUpdate(BaseModel):
     image_url: Optional[str] = None
     image_public_id: Optional[str] = None
+    mobile_image_url: Optional[str] = None
+    mobile_image_public_id: Optional[str] = None
     heading: Optional[str] = None
     subheading: Optional[str] = None
     is_active: Optional[bool] = None

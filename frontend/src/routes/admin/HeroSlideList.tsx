@@ -169,9 +169,14 @@ export default function HeroSlideList() {
                     className={`h-full w-full object-cover ${slide.is_active ? "" : "opacity-60 grayscale-[30%]"}`}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  {!slide.mobile_image_url && (
+                    <span className="absolute left-3 top-3 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">
+                      Add phone photo
+                    </span>
+                  )}
                   <div className="absolute inset-x-0 bottom-0 p-4">
                     <p className="font-display text-xl font-semibold leading-tight text-white">
-                      {slide.heading || <span className="italic text-white/70">No heading</span>}
+                      {slide.heading || <span className="italic text-white/70">Photo only — no text</span>}
                     </p>
                     {slide.subheading && (
                       <p className="mt-1 line-clamp-1 text-sm text-white/85">{slide.subheading}</p>

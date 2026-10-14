@@ -14,8 +14,15 @@ admin_router = APIRouter(prefix="/api/admin", tags=["admin-hero-slides"])
 
 
 def _slide_assets(slide: HeroSlide) -> Set[Tuple[str, str]]:
-    public_id = slide.image_public_id or public_id_from_url(slide.image_url)
-    return {(public_id, "image")} if public_id else set()
+    assets = set()
+    for url, public_id in (
+        (slide.image_url, slide.image_public_id),
+        (slide.mobile_image_url, slide.mobile_image_public_id),
+    ):
+        public_id = public_id or public_id_from_url(url)
+        if public_id:
+            assets.add((public_id, "image"))
+    return assets
 
 
 @public_router.get("/hero-slides", response_model=List[HeroSlideOut])
@@ -81,6 +88,8 @@ def update_hero_slide(
     changes = payload.model_dump(exclude_unset=True)
     if "image_url" in changes and "image_public_id" not in changes:
         changes["image_public_id"] = None
+    if "mobile_image_url" in changes and "mobile_image_public_id" not in changes:
+        changes["mobile_image_public_id"] = None
     for field, value in changes.items():
         setattr(slide, field, value)
 

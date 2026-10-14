@@ -9,11 +9,8 @@ import WhatsAppIcon from "./WhatsAppIcon";
 const AUTO_ROTATE_MS = 6000;
 const SWIPE_THRESHOLD_PX = 40;
 
-const DEFAULT_HEADING = "Fresh flowers & gifts, delivered with love";
-const DEFAULT_SUBHEADING = "Handpicked bouquets, plants & gift baskets for every occasion";
-
-/** Homepage hero. Slides (photo + heading + subtext) come from the admin's
- * Banners screen; several rotate on a timer, can be swiped on phones, and
+/** Homepage hero. Slides (desktop + mobile photo, optional heading and
+ * subtext) come from the admin's Banners screen; several rotate on a timer, can be swiped on phones, and
  * get arrows on desktop. */
 export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
   const [index, setIndex] = useState(0);
@@ -55,30 +52,56 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
           className="flex h-full transition-transform duration-700 ease-[cubic-bezier(.22,.61,.36,1)]"
           style={{ transform: `translateX(-${index * 100}%)` }}
         >
-          {slides.map((slide, i) => (
+          {slides.map((slide, i) => {
+            // A banner with no text shows just the photo and the buttons, so
+            // text baked into the photo itself isn't covered or shaded.
+            const hasText = Boolean(slide.heading || slide.subheading);
+            return (
             <div
               key={slide.id}
               className="relative h-full w-full flex-shrink-0"
               aria-hidden={i !== index}
             >
-              <img
-                src={slide.image_url}
-                alt=""
-                loading={i === 0 ? "eager" : "lazy"}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent lg:bg-gradient-to-r lg:from-black/60 lg:via-black/25" />
-              <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-3 p-6 pb-12 sm:p-10 sm:pb-14 lg:inset-y-0 lg:max-w-2xl lg:justify-center lg:p-16">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/75">
-                  Casa Lilly · Dubai
-                </p>
-                <h1 className="font-serif text-[28px] font-medium leading-[1.1] text-white sm:text-5xl lg:text-6xl">
-                  {slide.heading || DEFAULT_HEADING}
-                </h1>
-                <p className="max-w-md text-[15px] leading-relaxed text-white/85 sm:text-base">
-                  {slide.subheading || DEFAULT_SUBHEADING}
-                </p>
-                <div className="mt-3 grid w-full grid-cols-2 gap-2.5 sm:flex sm:w-auto sm:gap-3">
+              {/* Portrait photo on phones (where the hero is 4:5), wide photo
+                  from sm up. Older banners without a mobile photo fall back
+                  to the wide one. */}
+              <picture>
+                <source media="(min-width: 640px)" srcSet={slide.image_url} />
+                <img
+                  src={slide.mobile_image_url || slide.image_url}
+                  alt={slide.heading ?? ""}
+                  loading={i === 0 ? "eager" : "lazy"}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              </picture>
+              {hasText ? (
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent lg:bg-gradient-to-r lg:from-black/60 lg:via-black/25" />
+              ) : (
+                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent" />
+              )}
+              <div
+                className={`absolute inset-x-0 bottom-0 flex flex-col items-start gap-3 p-6 pb-12 sm:p-10 sm:pb-14 ${
+                  hasText ? "lg:inset-y-0 lg:max-w-2xl lg:justify-center lg:p-16" : "lg:px-16"
+                }`}
+              >
+                {hasText && (
+                  <>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/75">
+                      Casa Lilly · Dubai
+                    </p>
+                    {slide.heading && (
+                      <h1 className="font-serif text-[28px] font-medium leading-[1.1] text-white sm:text-5xl lg:text-6xl">
+                        {slide.heading}
+                      </h1>
+                    )}
+                    {slide.subheading && (
+                      <p className="max-w-md text-[15px] leading-relaxed text-white/85 sm:text-base">
+                        {slide.subheading}
+                      </p>
+                    )}
+                  </>
+                )}
+                <div className={`grid w-full grid-cols-2 gap-2.5 sm:flex sm:w-auto sm:gap-3 ${hasText ? "mt-3" : ""}`}>
                   <Link
                     to="/shop"
                     tabIndex={i === index ? 0 : -1}
@@ -100,7 +123,8 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {slides.length > 1 && (

@@ -62,6 +62,9 @@ export interface HeroSlide {
   id: number;
   image_url: string;
   image_public_id: string | null;
+  /** Portrait (4:5) photo for phones. Null on banners saved before it existed. */
+  mobile_image_url: string | null;
+  mobile_image_public_id: string | null;
   heading: string | null;
   subheading: string | null;
   is_active: boolean;
@@ -73,6 +76,8 @@ export interface HeroSlide {
 export interface HeroSlideInput {
   image_url: string | null;
   image_public_id?: string | null;
+  mobile_image_url: string | null;
+  mobile_image_public_id?: string | null;
   heading: string | null;
   subheading: string | null;
   is_active: boolean;

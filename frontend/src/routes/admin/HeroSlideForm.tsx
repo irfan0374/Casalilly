@@ -23,6 +23,8 @@ const HEADING_MAX = 255;
 const EMPTY_FORM: HeroSlideInput = {
   image_url: null,
   image_public_id: null,
+  mobile_image_url: null,
+  mobile_image_public_id: null,
   heading: "",
   subheading: "",
   is_active: true,
@@ -41,6 +43,7 @@ export default function HeroSlideForm() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [mobileImageError, setMobileImageError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -54,6 +57,8 @@ export default function HeroSlideForm() {
           setForm({
             image_url: slide.image_url,
             image_public_id: slide.image_public_id,
+            mobile_image_url: slide.mobile_image_url,
+            mobile_image_public_id: slide.mobile_image_public_id,
             heading: slide.heading ?? "",
             subheading: slide.subheading ?? "",
             is_active: slide.is_active,
@@ -88,8 +93,11 @@ export default function HeroSlideForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!token) return;
-    if (!form.image_url) {
-      setImageError("Add a banner photo.");
+    const missingDesktop = !form.image_url;
+    const missingMobile = !form.mobile_image_url;
+    setImageError(missingDesktop ? "Add the desktop photo." : null);
+    setMobileImageError(missingMobile ? "Add the phone photo." : null);
+    if (missingDesktop || missingMobile) {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -148,17 +156,32 @@ export default function HeroSlideForm() {
 
       <div className="grid items-start gap-5 lg:grid-cols-2 lg:gap-6">
         <div className="flex flex-col gap-5 lg:gap-6">
-          <Card title="Banner photo">
+          <Card title="Desktop photo" aside={<span className="text-xs text-stone-500">Wide · 2400 × 1000 px</span>}>
             <ImageUploader
               aspect="wide"
               imageUrl={form.image_url}
               emptyLabel="Tap to add a landscape photo"
-              emptyHint="Wide photos look best"
+              emptyHint="Shown on computers and tablets"
               error={imageError}
               onUploaded={(url, publicId) => {
                 setImageError(null);
                 updateField("image_url", url);
                 updateField("image_public_id", publicId);
+              }}
+            />
+          </Card>
+
+          <Card title="Phone photo" aside={<span className="text-xs text-stone-500">Portrait 4:5 · 1080 × 1350 px</span>}>
+            <ImageUploader
+              aspect="portrait"
+              imageUrl={form.mobile_image_url}
+              emptyLabel="Tap to add a portrait photo"
+              emptyHint="Shown on phones"
+              error={mobileImageError}
+              onUploaded={(url, publicId) => {
+                setMobileImageError(null);
+                updateField("mobile_image_url", url);
+                updateField("mobile_image_public_id", publicId);
               }}
             />
           </Card>
@@ -173,7 +196,8 @@ export default function HeroSlideForm() {
             }
           >
             <BannerPreview
-              imageUrl={form.image_url}
+              desktopImageUrl={form.image_url}
+              mobileImageUrl={form.mobile_image_url}
               heading={form.heading ?? ""}
               subheading={form.subheading ?? ""}
             />
@@ -182,6 +206,9 @@ export default function HeroSlideForm() {
 
         <div className="flex flex-col gap-5 lg:gap-6">
           <Card title="Text">
+            <p className="-mt-1 mb-4 text-sm text-stone-500">
+              Optional. Leave both empty to show only the photo and the buttons.
+            </p>
             <div className="flex flex-col gap-5">
               <Field
                 label="Heading"
@@ -192,16 +219,16 @@ export default function HeroSlideForm() {
                   id="banner-heading"
                   value={form.heading ?? ""}
                   maxLength={HEADING_MAX}
-                  placeholder="Fresh Flowers & Gifts, Delivered with Love"
+                  placeholder="e.g. Fresh flowers for every occasion"
                   onChange={(e) => updateField("heading", e.target.value)}
                 />
               </Field>
-              <Field label="Subtext" htmlFor="banner-subtext" aside="Optional">
+              <Field label="Subtext" htmlFor="banner-subtext">
                 <TextArea
                   id="banner-subtext"
                   rows={3}
                   value={form.subheading ?? ""}
-                  placeholder="Handpicked bouquets, plants & gift baskets for every occasion"
+                  placeholder="e.g. Handpicked bouquets, plants & gift baskets"
                   onChange={(e) => updateField("subheading", e.target.value)}
                 />
               </Field>
@@ -262,31 +289,61 @@ export default function HeroSlideForm() {
   );
 }
 
-/** Mirrors how the storefront's HeroSlideshow lays out a slide on a phone. */
+/** Mirrors how the storefront's HeroSlideshow lays out a slide, on a phone
+ * (portrait photo) and on desktop (wide photo). */
 function BannerPreview({
-  imageUrl,
+  desktopImageUrl,
+  mobileImageUrl,
   heading,
   subheading,
 }: {
-  imageUrl: string | null;
+  desktopImageUrl: string | null;
+  mobileImageUrl: string | null;
   heading: string;
   subheading: string;
 }) {
-  return (
-    <div className="relative mx-auto aspect-[4/5] max-w-xs overflow-hidden rounded-3xl bg-stone-200">
-      {imageUrl && <img src={imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-2 p-5 pb-6">
-        <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-white/75">Casa Lilly · Dubai</p>
-        <p className="font-serif text-2xl font-medium leading-tight text-white">
-          {heading || "Fresh flowers & gifts, delivered with love"}
-        </p>
-        <p className="line-clamp-2 text-xs text-white/85">
-          {subheading || "Handpicked bouquets, plants & gift baskets for every occasion"}
-        </p>
+  const hasText = Boolean(heading.trim() || subheading.trim());
+  const content = (size: "phone" | "desktop") => (
+    <>
+      {hasText ? (
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+      ) : (
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent" />
+      )}
+      <div className={`absolute inset-x-0 bottom-0 flex flex-col items-start ${size === "phone" ? "gap-2 p-5 pb-6" : "gap-1.5 p-4"}`}>
+        {hasText && (
+          <>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-white/75">Casa Lilly · Dubai</p>
+            {heading.trim() && (
+              <p className={`font-serif font-medium leading-tight text-white ${size === "phone" ? "text-2xl" : "text-lg"}`}>
+                {heading}
+              </p>
+            )}
+            {subheading.trim() && <p className="line-clamp-2 text-xs text-white/85">{subheading}</p>}
+          </>
+        )}
         <div className="mt-1 flex gap-2">
           <span className="rounded-full bg-rose-600 px-3 py-1.5 text-[11px] font-semibold text-white">Shop now</span>
-          <span className="rounded-full bg-white px-3 py-1.5 text-[11px] font-semibold text-stone-900">Order on WhatsApp</span>
+          <span className="rounded-full bg-white px-3 py-1.5 text-[11px] font-semibold text-stone-900">WhatsApp</span>
+        </div>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">Phone</p>
+        <div className="relative mx-auto aspect-[4/5] max-w-xs overflow-hidden rounded-3xl bg-stone-200">
+          {mobileImageUrl && <img src={mobileImageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+          {content("phone")}
+        </div>
+      </div>
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">Desktop</p>
+        <div className="relative aspect-[21/9] overflow-hidden rounded-2xl bg-stone-200">
+          {desktopImageUrl && <img src={desktopImageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+          {content("desktop")}
         </div>
       </div>
     </div>
