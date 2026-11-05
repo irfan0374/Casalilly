@@ -87,7 +87,7 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
                 {hasText && (
                   <>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/75">
-                      Casa Lilly · Dubai
+                      Casalily · Dubai
                     </p>
                     {slide.heading && (
                       <h1 className="font-serif text-[28px] font-medium leading-[1.1] text-white sm:text-5xl lg:text-6xl">

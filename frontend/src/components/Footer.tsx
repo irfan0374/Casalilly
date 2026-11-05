@@ -11,7 +11,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 text-center md:grid-cols-4 md:px-8 md:text-left">
         <div className="flex flex-col items-center md:items-start">
           <img src={logo} alt="" className="h-12 w-12 rounded-full object-cover ring-1 ring-stone-100" />
-          <p className="mt-3 font-serif text-2xl font-semibold text-stone-900">Casa Lilly</p>
+          <p className="mt-3 font-serif text-2xl font-semibold text-stone-900">Casalily</p>
           <p className="mt-2 max-w-xs text-sm leading-relaxed text-stone-500">
             Fresh flowers, plants and gifts, handcrafted in Dubai.
           </p>
@@ -66,7 +66,7 @@ export default function Footer() {
         </div>
       </div>
       <p className="border-t border-stone-100 py-5 text-center text-xs text-stone-400">
-        © {new Date().getFullYear()} Casa Lilly. All rights reserved.
+        © {new Date().getFullYear()} Casalily. All rights reserved.
       </p>
     </footer>
   );

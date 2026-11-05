@@ -233,14 +233,14 @@ export function StoryCard({
   );
 }
 
-const MAP_QUERY = encodeURIComponent(`Casa Lilly, ${SHOP_ADDRESS}`);
+const MAP_QUERY = encodeURIComponent(`Casalily, ${SHOP_ADDRESS}`);
 
 /** Map + address + call/WhatsApp buttons for visiting the shop. */
 export function VisitBoutique() {
   return (
     <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-stone-100 md:grid md:grid-cols-2">
       <iframe
-        title="Map showing Casa Lilly's location"
+        title="Map showing Casalily's location"
         src={`https://www.google.com/maps?q=${MAP_QUERY}&output=embed`}
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
@@ -250,7 +250,7 @@ export function VisitBoutique() {
         <div className="flex gap-3">
           <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-rose-600" aria-hidden="true" />
           <div>
-            <p className="font-semibold text-stone-900">Casa Lilly</p>
+            <p className="font-semibold text-stone-900">Casalily</p>
             <p className="mt-0.5 text-[15px] text-stone-600">{SHOP_ADDRESS}</p>
           </div>
         </div>

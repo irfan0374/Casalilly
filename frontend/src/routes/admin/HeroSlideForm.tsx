@@ -313,7 +313,7 @@ function BannerPreview({
       <div className={`absolute inset-x-0 bottom-0 flex flex-col items-start ${size === "phone" ? "gap-2 p-5 pb-6" : "gap-1.5 p-4"}`}>
         {hasText && (
           <>
-            <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-white/75">Casa Lilly · Dubai</p>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-white/75">Casalily · Dubai</p>
             {heading.trim() && (
               <p className={`font-serif font-medium leading-tight text-white ${size === "phone" ? "text-2xl" : "text-lg"}`}>
                 {heading}

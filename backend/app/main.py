@@ -12,7 +12,7 @@ from app.routers import (
     uploads,
 )
 
-app = FastAPI(title="Casa Lilly API")
+app = FastAPI(title="Casalily API")
 
 # Always allow local dev, plus whatever the deployed frontend's origin is
 # (FRONTEND_URL) — set that in production so the real Vercel domain isn't

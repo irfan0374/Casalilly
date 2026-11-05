@@ -89,7 +89,7 @@ export default function Home() {
       <HomeSection>
         <StoryCard
           image={storyImage}
-          imageAlt="Casa Lilly florist arranging a fresh bouquet"
+          imageAlt="Casalily florist arranging a fresh bouquet"
           eyebrow="Our story"
           title="Flowers that tell beautiful stories"
           body="We source the finest blooms and design with heart to bring beauty, joy and meaning to every moment."

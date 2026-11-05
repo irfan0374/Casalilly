@@ -93,7 +93,7 @@ export default function AboutSettingsForm() {
                   label="Intro text"
                   htmlFor="about-body"
                   aside={<CharCount value={body} max={BODY_GUIDE} />}
-                  hint="Tell customers about Casa Lilly's story. Line breaks are kept as typed."
+                  hint="Tell customers about Casalily's story. Line breaks are kept as typed."
                 >
                   <TextArea
                     id="about-body"

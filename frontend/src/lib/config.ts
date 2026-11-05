@@ -13,9 +13,9 @@ export const SITE_BASE_URL: string =
 
 // Shown on the About page when the admin hasn't set their own text (and as
 // placeholders in the admin's About editor).
-export const DEFAULT_ABOUT_HEADING = "Casa Lily Flowers & Plants";
+export const DEFAULT_ABOUT_HEADING = "Casalily Flowers & Plants";
 export const DEFAULT_ABOUT_BODY =
-  "Casa Lily Boutique merges premium botanicals with elite craftsmanship, delivering sophisticated floral experiences for every space.";
+  "Casalily Boutique merges premium botanicals with elite craftsmanship, delivering sophisticated floral experiences for every space.";
 
 // Boutique contact details — shown in the footer, the homepage's "Visit our
 // boutique" section and the About page.

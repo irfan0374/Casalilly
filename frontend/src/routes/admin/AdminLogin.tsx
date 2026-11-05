@@ -29,7 +29,7 @@ export default function AdminLogin() {
         <div className="mb-8 flex flex-col items-center text-center">
           <img
             src={logo}
-            alt="Casa Lilly"
+            alt="Casalily"
             className="h-24 w-24 rounded-full bg-white object-cover p-1 shadow-sm ring-1 ring-rose-100"
           />
           <h1 className="mt-6 font-display text-4xl font-bold text-stone-900">Welcome back</h1>
@@ -42,7 +42,7 @@ export default function AdminLogin() {
 
         <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-stone-400">
           <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-          Casa Lilly admin · authorised staff only
+          Casalily admin · authorised staff only
         </p>
       </div>
     </div>

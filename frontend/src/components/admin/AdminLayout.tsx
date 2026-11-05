@@ -47,7 +47,7 @@ function Brand() {
     <div className="flex items-center gap-3">
       <img src={logo} alt="" className="h-10 w-10 rounded-full object-cover ring-1 ring-rose-100" />
       <div className="leading-tight">
-        <p className="font-display text-lg font-semibold text-stone-900">Casa Lilly</p>
+        <p className="font-display text-lg font-semibold text-stone-900">Casalily</p>
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
           Admin
         </p>

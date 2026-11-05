@@ -26,7 +26,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-2.5">
             <img src={logo} alt="" className="h-10 w-10 rounded-full object-cover ring-1 ring-stone-100" />
             <span className="leading-none">
-              <span className="block font-serif text-xl font-semibold text-stone-900">Casa Lilly</span>
+              <span className="block font-serif text-xl font-semibold text-stone-900">Casalily</span>
               <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-[0.25em] text-stone-400">
                 Dubai
               </span>

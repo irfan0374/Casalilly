@@ -72,7 +72,7 @@ export default function About() {
           <div className="relative overflow-hidden rounded-2xl shadow-sm">
             <img
               src={boutiqueImage}
-              alt="Casa Lily boutique interior"
+              alt="Casalily boutique interior"
               className="h-72 w-full object-cover sm:h-96"
             />
           </div>
@@ -87,7 +87,7 @@ export default function About() {
             <div className="relative overflow-hidden rounded-2xl shadow-sm">
               <img
                 src={toteImage}
-                alt="Casa Lily delivery and packaging"
+                alt="Casalily delivery and packaging"
                 className="h-40 w-full object-cover sm:h-56"
               />
             </div>
@@ -132,7 +132,7 @@ export default function About() {
             Contacts
           </p>
           <p className="mt-3 font-serif text-2xl font-bold sm:text-3xl">
-            Casa Lily Flowers &amp; Plants
+            Casalily Flowers &amp; Plants
           </p>
 
           <div className="mx-auto mt-6 flex max-w-md flex-col items-center gap-3 text-sm text-white/80 sm:text-base">
@@ -159,7 +159,7 @@ export default function About() {
               href={`https://instagram.com/${INSTAGRAM_HANDLE}`}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Casa Lily on Instagram"
+              aria-label="Casalily on Instagram"
               className="flex h-12 w-12 items-center justify-center rounded-full border border-white/25 text-white transition hover:border-rose-300 hover:bg-white/10 hover:text-rose-300"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className="h-5 w-5" aria-hidden="true">
@@ -172,7 +172,7 @@ export default function About() {
               href={buildGeneralWhatsAppLink(SHOP_PHONE)}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Chat with Casa Lily on WhatsApp"
+              aria-label="Chat with Casalily on WhatsApp"
               className="flex h-12 w-12 items-center justify-center rounded-full border border-white/25 text-white transition hover:border-rose-300 hover:bg-white/10 hover:text-rose-300"
             >
               <svg viewBox="0 0 32 32" fill="currentColor" className="h-6 w-6" aria-hidden="true">

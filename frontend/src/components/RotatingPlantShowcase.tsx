@@ -158,10 +158,10 @@ export default function RotatingPlantShowcase() {
     <section ref={sectionRef} className="mx-auto max-w-7xl px-4 pt-14 md:px-8 md:pt-20">
       <div className="rounded-3xl bg-stone-100/70 px-5 py-10 md:px-12 md:py-14">
         <p className="text-center text-[11px] font-semibold uppercase tracking-[0.25em] text-rose-700">
-          The Casa Lilly standard
+          The Casalily standard
         </p>
         <h2 className="mt-2 text-center font-serif text-[28px] font-medium leading-tight text-stone-900 md:text-4xl">
-          Why choose Casa Lilly
+          Why choose Casalily
         </h2>
 
         <div className="mt-8 grid items-center gap-3 md:mt-12 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-10">
